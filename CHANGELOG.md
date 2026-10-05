@@ -4,6 +4,13 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 
 ## 2026-10-05
 
+### Aggiunto (2) — scatto foto stile BeReal
+- Scatto doppio in-app (camera posteriore + selfie in sequenza, via `js/camera-capture.js` e un overlay fullscreen) al posto del semplice `<input capture>` nativo: ogni foto pubblicata salva ora `backUrl` + `frontUrl` invece del singolo `imageUrl` (fallback automatico sulle foto pubblicate col vecchio schema, nessuna migrazione dati).
+- Reciprocità: le foto di oggi del partner restano nascoste finché non hai pubblicato la tua foto di oggi.
+- Layout "è il momento": quando c'è uno slot notificato ancora senza foto, il pulsante di scatto cambia colore/testo per segnalarlo.
+- Tap sulla miniatura selfie per scambiarla con la foto grande: entrambi gli scatti si possono vedere a piena grandezza, nessuno resta bloccato piccolo.
+- Non testato in questa sessione con fotocamera/Firebase reali (ambiente senza browser grafico disponibile) — verificare lo scatto completo su dispositivo prima di considerarlo stabile.
+
 ### Corretto (2)
 - Notifiche in foreground invisibili: `onMessage` (ricevuto quando l'app è già aperta) finiva solo in `console.log`, senza mostrare nulla all'utente. Ora mostra un toast col testo della notifica.
 - Token FCM non registrati (`NotRegistered`, es. da reinstallazioni o vecchie registrazioni SW) restavano per sempre in `fcmTokens`, venendo ritentati a ogni invio senza successo. Lo scheduler ora li rimuove dal documento `settings` dopo un fallimento `messaging/registration-token-not-registered`.

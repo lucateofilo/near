@@ -49,13 +49,23 @@
   <section id="view-home" class="view hidden">
     <h1>Foto</h1>
     <div id="partnerCard" class="partner-card hidden"></div>
-    <label class="capture-btn">
+    <button id="captureBtn" class="capture-btn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.2"/></svg>
-      Scatta una foto
-      <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
-    </label>
+      <span id="captureBtnLabel">Scatta una foto</span>
+    </button>
+    <p id="reciprocityNote" class="reciprocity-note hidden">Pubblica la tua foto di oggi per vedere quella del partner.</p>
     <div id="photosList" class="photos-list"></div>
   </section>
+
+  <div id="captureOverlay" class="capture-overlay hidden">
+    <video id="captureVideo" autoplay playsinline muted></video>
+    <img id="capturePreviewBack" class="capture-preview-thumb hidden" alt="">
+    <button id="captureCancelBtn" class="capture-cancel-btn" type="button">Annulla</button>
+    <div class="capture-overlay-controls">
+      <span id="captureStepLabel" class="capture-step-label"></span>
+      <button id="captureShotBtn" class="capture-shot-btn" type="button" aria-label="Scatta"></button>
+    </div>
+  </div>
 
   <section id="view-notes" class="view hidden">
     <h1>Bigliettini</h1>

@@ -7,7 +7,7 @@ import {
 
 const LATE_THRESHOLD_MS = 15 * 60 * 1000;
 
-async function getPendingSlot(coupleId, uid) {
+export async function getPendingSlot(coupleId, uid) {
   const dateKey = romeDateKey();
   const schedSnap = await getDoc(doc(db, 'couples', coupleId, 'schedule', dateKey));
   if (!schedSnap.exists()) return { dateKey, slotTime: null };
@@ -39,7 +39,7 @@ export async function requestLocation() {
   });
 }
 
-export async function uploadPhoto(coupleId, uid, file, { withLocation }) {
+export async function uploadPhoto(coupleId, uid, { backFile, frontFile }, { withLocation }) {
   const { dateKey, slotTime } = await getPendingSlot(coupleId, uid);
   const takenAt = Date.now();
 
@@ -50,7 +50,10 @@ export async function uploadPhoto(coupleId, uid, file, { withLocation }) {
 
   const location = withLocation ? await requestLocation() : null;
 
-  const imageUrl = await uploadToCloudinary(file, `couples/${coupleId}/photos/${uid}`);
+  const [backUrl, frontUrl] = await Promise.all([
+    uploadToCloudinary(backFile, `couples/${coupleId}/photos/${uid}`),
+    uploadToCloudinary(frontFile, `couples/${coupleId}/photos/${uid}`),
+  ]);
 
   await addDoc(collection(db, 'couples', coupleId, 'photos'), {
     uid,
@@ -58,11 +61,18 @@ export async function uploadPhoto(coupleId, uid, file, { withLocation }) {
     scheduleDate: dateKey,
     takenAt: Timestamp.fromMillis(takenAt),
     status,
-    imageUrl,
+    backUrl,
+    frontUrl,
     location,
     reactions: {},
     notifiedToPartner: false,
   });
+}
+
+// foto pubblicate col vecchio schema a scatto singolo: niente migrazione dati,
+// il rendering fa semplicemente fallback su imageUrl quando backUrl manca
+export function photoImages(photo) {
+  return { main: photo.backUrl || photo.imageUrl, thumb: photo.frontUrl || null };
 }
 
 export async function listPhotos(coupleId) {

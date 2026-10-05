@@ -3,7 +3,9 @@ import { auth } from './firebase-config.js';
 import { findMyCouple, generatePairingCode, redeemPairingCode } from './pairing.js';
 import { state, setUser, setCouple, reset } from './state.js';
 import { showView, toast, formatDate } from './ui.js';
-import { uploadPhoto, listPhotos, reactToPhoto } from './firestore-photos.js';
+import { uploadPhoto, listPhotos, reactToPhoto, getPendingSlot, photoImages } from './firestore-photos.js';
+import { startCamera, stopCamera, captureFrame } from './camera-capture.js';
+import { romeDateKey } from './date-utils.js';
 import { sendNote, listNotes } from './firestore-notes.js';
 import { SETTINGS_DEFS, getSettings, setSetting } from './settings.js';
 import { computeStreak } from './streak.js';
@@ -152,33 +154,74 @@ document.querySelectorAll('#mainNav button').forEach((btn) => {
 
 // ---------- Home / Foto ----------
 
-document.getElementById('photoInput').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+// Scatto doppio stile BeReal: back poi front in sequenza (nessun device garantisce
+// davvero due stream camera simultanei via web), con retake libero prima di pubblicare.
+const captureOverlay = document.getElementById('captureOverlay');
+const captureVideo = document.getElementById('captureVideo');
+const capturePreviewBack = document.getElementById('capturePreviewBack');
+const captureStepLabel = document.getElementById('captureStepLabel');
+let captureStream = null;
+let backBlob = null;
+
+async function runCaptureStep(facingMode, label) {
+  captureStepLabel.textContent = label;
+  captureStream = await startCamera(facingMode);
+  captureVideo.srcObject = captureStream;
+  return new Promise((resolve) => {
+    document.getElementById('captureShotBtn').onclick = async () => {
+      const blob = await captureFrame(captureVideo);
+      stopCamera(captureStream);
+      resolve(blob);
+    };
+  });
+}
+
+function closeCaptureOverlay() {
+  stopCamera(captureStream);
+  captureStream = null;
+  backBlob = null;
+  capturePreviewBack.classList.add('hidden');
+  captureOverlay.classList.add('hidden');
+}
+
+document.getElementById('captureCancelBtn').addEventListener('click', closeCaptureOverlay);
+
+document.getElementById('captureBtn').addEventListener('click', async () => {
+  captureOverlay.classList.remove('hidden');
   try {
-    await uploadPhoto(state.coupleId, state.user.uid, file, { withLocation: currentSettings?.memoryMapEnabled ?? true });
+    backBlob = await runCaptureStep('environment', 'Scatta la foto principale');
+    capturePreviewBack.src = URL.createObjectURL(backBlob);
+    capturePreviewBack.classList.remove('hidden');
+
+    const frontBlob = await runCaptureStep('user', 'E ora un selfie');
+
+    await uploadPhoto(state.coupleId, state.user.uid, { backFile: backBlob, frontFile: frontBlob }, {
+      withLocation: currentSettings?.memoryMapEnabled ?? true,
+    });
     toast('Foto pubblicata!');
+    closeCaptureOverlay();
     renderHome();
   } catch (err) {
-    toast('Errore durante la pubblicazione della foto.');
+    toast(err.name === 'NotAllowedError' ? 'Permesso fotocamera negato.' : 'Errore durante lo scatto/pubblicazione.');
     console.error(err);
-  } finally {
-    e.target.value = '';
+    closeCaptureOverlay();
   }
 });
 
 async function renderHome() {
-  const captureLabel = document.querySelector('#view-home .capture-btn');
+  const captureBtn = document.getElementById('captureBtn');
+  const captureBtnLabel = document.getElementById('captureBtnLabel');
+  const reciprocityNote = document.getElementById('reciprocityNote');
   const wrap = document.getElementById('photosList');
   const partnerCard = document.getElementById('partnerCard');
 
   if (!state.coupleId) {
-    captureLabel.classList.add('hidden');
+    captureBtn.classList.add('hidden');
     partnerCard.classList.add('hidden');
     wrap.innerHTML = '<p>Abbinati al tuo partner dalle Impostazioni per iniziare a scattare foto insieme.</p>';
     return;
   }
-  captureLabel.classList.remove('hidden');
+  captureBtn.classList.remove('hidden');
 
   const partnerProfile = await getProfile(state.partnerUid);
   partnerCard.innerHTML = `
@@ -190,10 +233,26 @@ async function renderHome() {
   `;
   partnerCard.classList.remove('hidden');
 
+  const { slotTime } = await getPendingSlot(state.coupleId, state.user.uid);
+  captureBtn.classList.toggle('capture-btn-pending', !!slotTime);
+  captureBtnLabel.textContent = slotTime ? 'È il momento! Scatta ora' : 'Scatta una foto';
+
+  const todayKey = romeDateKey();
   const photos = await listPhotos(state.coupleId);
-  wrap.innerHTML = photos.map((p) => `
+  const iPostedToday = photos.some((p) => p.uid === state.user.uid && p.scheduleDate === todayKey);
+  const hiddenToday = photos.filter((p) => !iPostedToday && p.uid !== state.user.uid && p.scheduleDate === todayKey);
+  const visible = photos.filter((p) => !hiddenToday.includes(p));
+
+  reciprocityNote.classList.toggle('hidden', hiddenToday.length === 0);
+
+  wrap.innerHTML = visible.map((p) => {
+    const { main, thumb } = photoImages(p);
+    return `
     <div class="photo-card">
-      <img src="${p.imageUrl}" alt="Foto" loading="lazy">
+      <div class="dual-photo">
+        <img class="photo-main" src="${main}" alt="Foto" loading="lazy">
+        ${thumb ? `<img class="photo-thumb" src="${thumb}" alt="Selfie" loading="lazy">` : ''}
+      </div>
       <div class="photo-meta">
         <span>${formatDate(p.takenAt?.toDate?.() ?? p.takenAt)}</span>
         <span class="status-badge status-${p.status}">${p.status === 'on_time' ? 'Puntuale' : 'In ritardo'}</span>
@@ -202,7 +261,17 @@ async function renderHome() {
         ${REACTION_EMOJIS.map((em) => `<button data-emoji="${em}">${em}</button>`).join('')}
       </div>
     </div>
-  `).join('') || '<p>Ancora nessuna foto. Aspettate la prossima notifica!</p>';
+  `;
+  }).join('') || '<p>Ancora nessuna foto. Aspettate la prossima notifica!</p>';
+
+  // tap sulla miniatura per scambiarla con la foto grande, cosi' si vede
+  // integralmente anche quella (nessuna delle due resta "piccola per sempre")
+  wrap.querySelectorAll('.photo-thumb').forEach((thumbEl) => {
+    thumbEl.addEventListener('click', () => {
+      const mainEl = thumbEl.previousElementSibling;
+      [mainEl.src, thumbEl.src] = [thumbEl.src, mainEl.src];
+    });
+  });
 
   wrap.querySelectorAll('.reactions-row').forEach((row) => {
     row.querySelectorAll('button').forEach((btn) => {
