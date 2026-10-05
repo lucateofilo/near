@@ -589,9 +589,12 @@ function renderNewTripForm() {
   detail.innerHTML = `
     <form id="tripForm">
       <h2>Nuovo viaggio</h2>
-      <input type="text" id="tripName" placeholder="Nome / destinazione" aria-label="Nome o destinazione del viaggio" required>
-      <input type="date" id="tripStartDate" aria-label="Data di inizio del viaggio" required>
-      <input type="number" id="tripDays" placeholder="Numero di giorni" aria-label="Numero di giorni del viaggio" min="1" max="60" required>
+      <label class="field-label" for="tripName">Nome o destinazione</label>
+      <input type="text" id="tripName" placeholder="Es. Weekend a Firenze" required>
+      <label class="field-label" for="tripStartDate">Data di inizio</label>
+      <input type="date" id="tripStartDate" required>
+      <label class="field-label" for="tripDays">Numero di giorni</label>
+      <input type="number" id="tripDays" placeholder="Es. 3" min="1" max="60" required>
       <label><input type="checkbox" id="tripPause"> Sospendi le notifiche random durante il viaggio</label>
       <button type="submit">Crea</button>
       <button type="button" id="tripCancelBtn" class="btn-secondary">Annulla</button>

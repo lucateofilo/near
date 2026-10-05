@@ -4,6 +4,9 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 
 ## 2026-10-05
 
+### Corretto — etichette visibili sui campi dei form
+- Il campo data di "Nuovo evento" (Calendario) e "Nuovo viaggio" non aveva alcuna indicazione visibile di cosa fosse: solo un `aria-label` (invisibile, letto solo dagli screen reader) e, per `<input type="date">`, nessun placeholder testuale su molti browser mobile — restava una casella vuota senza senso a vista. Aggiunta una `<label>` visibile e persistente sopra ogni campo che ne aveva bisogno (titolo/data evento, nome/data/giorni viaggio, codice partner); rimossi gli `aria-label` diventati ridondanti dove ora c'è una label vera associata via `for`.
+
 ### Rifinito — form di inserimento dietro un "+"
 - Bigliettini, Calendario e Viaggio mostravano il form di inserimento sempre aperto sopra la lista. Ora c'è un bottone "+" in alto a destra (ruota a "×" quando il form è aperto) in ogni pagina, coerente con lo stesso pattern già usato per i viaggi; il form si richiude da solo dopo l'invio.
 - Corretti tre messaggi "Abbinati al tuo partner dalle Impostazioni..." (Home, Bigliettini, Viaggio) rimasti con un riferimento vecchio: Impostazioni non gestisce più l'abbinamento da quando è stata introdotta la pagina Account.

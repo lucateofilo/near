@@ -83,8 +83,10 @@
     <p id="calendarUnpaired" class="hidden">Abbinati al tuo partner dalla pagina Account per iniziare a segnare le vostre date importanti.</p>
     <div id="calendarContent" class="hidden">
       <form id="eventForm" class="event-form hidden">
-        <input type="text" id="eventTitle" placeholder="Titolo (es. Anniversario)" aria-label="Titolo dell'evento" required>
-        <input type="date" id="eventDate" aria-label="Data dell'evento" required>
+        <label class="field-label" for="eventTitle">Titolo dell'evento</label>
+        <input type="text" id="eventTitle" placeholder="Es. Anniversario, compleanno..." required>
+        <label class="field-label" for="eventDate">Data</label>
+        <input type="date" id="eventDate" required>
         <label><input type="checkbox" id="eventRecurring" checked> Si ripete ogni anno</label>
         <button type="submit">Aggiungi</button>
       </form>
@@ -145,7 +147,8 @@
         <div id="myPairingCode" class="pairing-code hidden">—</div>
         <button id="generateCodeBtn">Genera codice</button>
         <form id="redeemForm">
-          <input type="text" id="redeemInput" placeholder="Es. AB12CD" aria-label="Codice di abbinamento del partner" maxlength="6" style="text-transform:uppercase">
+          <label class="field-label" for="redeemInput">Codice del partner</label>
+          <input type="text" id="redeemInput" placeholder="Es. AB12CD" maxlength="6" style="text-transform:uppercase">
           <button type="submit">Unisciti</button>
         </form>
         <p id="pairingError" class="error-text"></p>

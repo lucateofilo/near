@@ -104,6 +104,16 @@ main#app { max-width: 480px; margin: 0 auto; padding: 16px; }
 }
 .subtitle { color: var(--muted); margin-top: 0; margin-bottom: 24px; font-size: 0.92rem; }
 
+/* Un placeholder sparisce non appena si scrive e un aria-label non si vede
+   affatto: senza un'etichetta visibile e persistente non è chiaro cosa vada
+   messo in un campo, specialmente per un <input type="date"> che su alcuni
+   browser mobile appare come una casella vuota. */
+.field-label {
+  display: block; font-size: 0.8rem; font-weight: 600;
+  color: var(--muted); margin: 10px 0 4px;
+}
+.field-label:first-child { margin-top: 0; }
+
 input, textarea, select, button {
   font-family: inherit; font-size: 1rem;
   border-radius: 10px; border: 1px solid #ddd6c9;
