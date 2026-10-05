@@ -528,12 +528,12 @@ function renderNewTripForm() {
   detail.innerHTML = `
     <form id="tripForm">
       <h2>Nuovo viaggio</h2>
-      <input type="text" id="tripName" placeholder="Nome / destinazione" required>
-      <input type="date" id="tripStartDate" required>
-      <input type="number" id="tripDays" placeholder="Numero di giorni" min="1" max="60" required>
+      <input type="text" id="tripName" placeholder="Nome / destinazione" aria-label="Nome o destinazione del viaggio" required>
+      <input type="date" id="tripStartDate" aria-label="Data di inizio del viaggio" required>
+      <input type="number" id="tripDays" placeholder="Numero di giorni" aria-label="Numero di giorni del viaggio" min="1" max="60" required>
       <label><input type="checkbox" id="tripPause"> Sospendi le notifiche random durante il viaggio</label>
       <button type="submit">Crea</button>
-      <button type="button" id="tripCancelBtn">Annulla</button>
+      <button type="button" id="tripCancelBtn" class="btn-secondary">Annulla</button>
     </form>
   `;
   document.getElementById('tripCancelBtn').addEventListener('click', () => {
@@ -599,11 +599,11 @@ async function openTrip(tripId) {
   detail.classList.remove('hidden');
 
   detail.innerHTML = `
-    <button id="tripBackBtn">← Torna ai viaggi</button>
+    <button id="tripBackBtn" class="btn-secondary">← Torna ai viaggi</button>
     ${days.map((d) => `
       <div class="day-card">
         <h2>Giorno ${d.dayIndex + 1}</h2>
-        <textarea data-day="${d.dayIndex}" placeholder="Cosa farete questo giorno?">${escapeHtml(d.plan || '')}</textarea>
+        <textarea data-day="${d.dayIndex}" placeholder="Cosa farete questo giorno?" aria-label="Piano del giorno ${d.dayIndex + 1}">${escapeHtml(d.plan || '')}</textarea>
         ${d.photoUrl ? `<img src="${d.photoUrl}" alt="Foto giorno ${d.dayIndex + 1}">` : ''}
         <label class="capture-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.2"/></svg>

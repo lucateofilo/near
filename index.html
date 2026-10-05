@@ -35,8 +35,8 @@
       <h1>Near</h1>
       <p class="subtitle">Il vostro spazio privato, a due.</p>
       <form id="authForm">
-        <input type="email" id="authEmail" placeholder="Email" required autocomplete="email">
-        <input type="password" id="authPassword" placeholder="Password" required autocomplete="current-password" minlength="6">
+        <input type="email" id="authEmail" placeholder="Email" aria-label="Email" required autocomplete="email">
+        <input type="password" id="authPassword" placeholder="Password" aria-label="Password" required autocomplete="current-password" minlength="6">
         <button type="submit" id="authSubmitBtn">Accedi</button>
       </form>
       <button id="authToggleBtn" class="link-btn">Non hai un account? Registrati</button>
@@ -68,7 +68,7 @@
   <section id="view-notes" class="view hidden">
     <h1>Bigliettini</h1>
     <form id="noteForm" class="note-form">
-      <textarea id="noteText" placeholder="Scrivi un pensiero carino..." maxlength="500" required></textarea>
+      <textarea id="noteText" placeholder="Scrivi un pensiero carino..." aria-label="Testo del bigliettino" maxlength="500" required></textarea>
       <button type="submit">Invia</button>
     </form>
     <div id="notesList" class="notes-list"></div>
@@ -91,7 +91,7 @@
           <div id="myAvatar" class="avatar"></div>
           <input type="file" id="avatarInput" accept="image/*" hidden>
         </label>
-        <input type="text" id="profileNameInput" placeholder="Il tuo nome" maxlength="40">
+        <input type="text" id="profileNameInput" placeholder="Il tuo nome" aria-label="Il tuo nome" maxlength="40">
       </div>
     </div>
 
@@ -103,7 +103,7 @@
         <div id="myPairingCode" class="pairing-code hidden">—</div>
         <button id="generateCodeBtn">Genera codice</button>
         <form id="redeemForm">
-          <input type="text" id="redeemInput" placeholder="Es. AB12CD" maxlength="6" style="text-transform:uppercase">
+          <input type="text" id="redeemInput" placeholder="Es. AB12CD" aria-label="Codice di abbinamento del partner" maxlength="6" style="text-transform:uppercase">
           <button type="submit">Unisciti</button>
         </form>
         <p id="pairingError" class="error-text"></p>
@@ -121,8 +121,8 @@
       <div class="settings-block">
         <h2>Calendario</h2>
         <form id="eventForm" class="event-form">
-          <input type="text" id="eventTitle" placeholder="Titolo (es. Anniversario)" required>
-          <input type="date" id="eventDate" required>
+          <input type="text" id="eventTitle" placeholder="Titolo (es. Anniversario)" aria-label="Titolo dell'evento" required>
+          <input type="date" id="eventDate" aria-label="Data dell'evento" required>
           <label><input type="checkbox" id="eventRecurring" checked> Si ripete ogni anno</label>
           <button type="submit">Aggiungi</button>
         </form>

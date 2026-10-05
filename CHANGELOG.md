@@ -4,6 +4,14 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 
 ## 2026-10-05
 
+### Rifinito — layout più curato, stessa identità romantica
+- `.settings-block` non aveva mai avuto una regola CSS propria: le Impostazioni erano l'unica pagina senza le card bianche con ombra che Home/Bigliettini/Viaggio usano già, restando una lista grezza di titoli e input. Ora hanno la stessa superficie delle altre pagine.
+- Zero stati `:focus` esistevano in tutto il foglio di stile: i campi non davano alcun segnale visivo quando si entrava a scriverci. Aggiunto un anello di focus (tinta sage) su input/textarea/select/bottoni, utile anche da tastiera.
+- "Annulla" e "← Torna ai viaggi" avevano lo stesso peso visivo del bottone primario della stessa schermata (entrambi verde pieno). Nuova classe `.btn-secondary` (contorno, sfondo trasparente) per distinguere l'azione di uscita da quella principale.
+- Aggiunti stati hover coerenti (solo su dispositivi con mouse, `@media (hover:hover)`, cosi' il tocco su mobile non resta "incollato" allo stato attivo) su bottoni, card di lista, nav in basso, popover modalità silenziosa, reazioni.
+- Aggiunti `aria-label` ai campi che avevano solo un placeholder come indicazione (email, password, bigliettino, nome profilo, codice coppia, titolo/data evento, nome/data/giorni viaggio, piano del giorno) — nessuna label persistente per chi usa screen reader.
+- Nessuna modifica alla logica JS: solo HTML/CSS, palette (sage/lavanda/crema) e font (Fraunces per i titoli) invariati.
+
 ### Corretto (3)
 - Selfie salvati specchiati: molti browser mobile (es. Chrome su Android) consegnano lo stream della fotocamera frontale già specchiato a livello di driver. Lo scatto veniva disegnato così com'era, quindi il file finale usciva ribaltato rispetto alla realtà. Ora il frame frontale viene riflesso di nuovo in fase di cattura, cosi' il selfie salvato corrisponde a come si è stati fotografati davvero.
 - Etichetta del countdown nel pannello Ricordi: "Prossimo anniversario" → "Prossimo evento" (il countdown copre qualunque evento aggiunto, non solo gli anniversari).

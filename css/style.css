@@ -45,14 +45,27 @@ body {
 .icon-btn {
   grid-column: 3; justify-self: end;
   background: none; border: none; cursor: pointer; color: var(--muted);
-  width: auto; padding: 4px; display: flex; margin-bottom: 0;
+  width: auto; padding: 6px; display: flex; margin-bottom: 0; border-radius: 50%;
 }
 .icon-btn-start { grid-column: 1; justify-self: start; }
+@media (hover: hover) {
+  button.icon-btn:hover { background: rgba(60,58,54,0.06); color: var(--sage-dark); }
+}
 
 main#app { max-width: 480px; margin: 0 auto; padding: 16px; }
 
-.view h1 { font-size: 1.4rem; margin: 6px 0 16px; color: var(--sage-dark); }
-.view h2 { font-size: 1rem; margin: 18px 0 8px; color: var(--ink); }
+.view h1 { font-size: 1.4rem; margin: 6px 0 16px; color: var(--sage-dark); text-wrap: pretty; }
+.view h2 { font-size: 1rem; margin: 18px 0 8px; color: var(--ink); text-wrap: pretty; }
+
+/* Ogni altra pagina (Home, Bigliettini, Viaggio) raggruppa i contenuti in card
+   bianche con ombra; le Impostazioni usavano gli stessi .settings-block senza
+   che nessuna regola li vestisse, restando una lista grezza di titoli e input
+   mentre il resto dell'app aveva già una superficie definita. */
+.settings-block {
+  background: #fff; border-radius: var(--radius); padding: 16px;
+  margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.settings-block h2:first-child { margin-top: 0; }
 
 #view-login {
   position: relative;
@@ -86,15 +99,39 @@ input, textarea, select, button {
   border-radius: 10px; border: 1px solid #ddd6c9;
   padding: 11px 13px; width: 100%; margin-bottom: 10px;
   background: #fff; color: var(--ink);
+  transition: border-color .15s, box-shadow .15s;
 }
 textarea { resize: vertical; min-height: 70px; }
 
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: none; border-color: var(--sage);
+  box-shadow: 0 0 0 3px rgba(156,175,136,0.28);
+}
+
 button {
   background: var(--sage); color: #fff; border: none;
-  font-weight: 600; cursor: pointer; transition: opacity .15s;
+  font-weight: 600; cursor: pointer;
+  transition: background .15s, opacity .15s, transform .1s;
 }
-button:active { opacity: 0.8; }
+button:active { opacity: 0.85; transform: scale(0.98); }
+button:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(156,175,136,0.4); }
+@media (hover: hover) {
+  button:hover { background: var(--sage-dark); }
+}
 .link-btn { background: none; color: var(--sage-dark); text-decoration: underline; width: auto; padding: 4px; font-weight: 500; }
+@media (hover: hover) {
+  button.link-btn:hover { background: none; color: var(--ink); }
+}
+
+/* Bottoni secondari (Annulla, Torna indietro): prima erano identici per peso
+   visivo al CTA principale della stessa schermata, ora si vede subito qual è
+   l'azione primaria e quale quella di uscita. */
+.btn-secondary {
+  background: none; color: var(--sage-dark); border: 1px solid #ddd6c9; font-weight: 600;
+}
+@media (hover: hover) {
+  button.btn-secondary:hover { background: var(--cream); color: var(--sage-dark); }
+}
 
 .error-text { color: var(--danger); font-size: 0.85rem; min-height: 1.2em; }
 
@@ -122,6 +159,12 @@ button:active { opacity: 0.8; }
 .photo-card, .note-card, .trip-card, .event-card {
   background: #fff; border-radius: var(--radius); padding: 14px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  transition: box-shadow .15s, transform .15s;
+}
+@media (hover: hover) {
+  .photo-card:hover, .note-card:hover, .trip-card:hover, .event-card:hover {
+    box-shadow: 0 6px 18px rgba(60,58,54,0.1); transform: translateY(-1px);
+  }
 }
 .dual-photo { position: relative; margin-bottom: 8px; }
 .photo-main { width: 100%; border-radius: 10px; display: block; }
@@ -138,11 +181,14 @@ button:active { opacity: 0.8; }
   background: none; border: none; padding: 2px; margin: 0; width: auto;
   color: var(--muted); cursor: pointer; display: inline-flex; flex-shrink: 0;
 }
-.delete-btn:hover { color: var(--danger); }
+button.delete-btn:hover { background: none; color: var(--danger); }
 .status-on_time { background: #E3EEDA; color: var(--sage-dark); }
 .status-late { background: #F3E3D6; color: var(--danger); }
 .reactions-row { display: flex; gap: 8px; }
 .reactions-row button { width: auto; background: var(--cream); color: var(--ink); padding: 6px 10px; font-size: 1.1rem; margin-bottom: 0; }
+@media (hover: hover) {
+  .reactions-row button:hover { background: #ddd6c9; }
+}
 
 .note-card { border-left: 4px solid var(--lavender); }
 .note-meta { font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
@@ -151,6 +197,10 @@ button:active { opacity: 0.8; }
 .toggle-row {
   display: block; background: #fff; border-radius: var(--radius);
   padding: 14px; margin-bottom: 10px; cursor: pointer;
+  transition: box-shadow .15s;
+}
+@media (hover: hover) {
+  .toggle-row:hover { box-shadow: 0 2px 10px rgba(60,58,54,0.08); }
 }
 .toggle-row-top { display: flex; justify-content: space-between; align-items: center; }
 .toggle-title { font-weight: 600; }
@@ -180,6 +230,9 @@ button:active { opacity: 0.8; }
 }
 .main-nav button.active { color: var(--sage-dark); background: var(--cream); }
 .nav-icon { width: 22px; height: 22px; }
+@media (hover: hover) {
+  .main-nav button:not(.active):hover { color: var(--sage-dark); }
+}
 
 .quiet-fab {
   position: fixed; bottom: 92px; right: 18px; z-index: 11;
@@ -197,6 +250,9 @@ button:active { opacity: 0.8; }
   min-width: 220px;
 }
 .quiet-popover button { background: var(--cream); color: var(--ink); text-align: left; margin-bottom: 0; }
+@media (hover: hover) {
+  .quiet-popover button:hover { background: #ddd6c9; }
+}
 
 .toast {
   position: fixed; top: 10px; left: 50%; transform: translateX(-50%) translateY(-20px);
