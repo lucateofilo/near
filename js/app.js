@@ -1,4 +1,5 @@
 import { watchAuth, login, signup, logout } from './auth.js';
+import { auth } from './firebase-config.js';
 import { findMyCouple, generatePairingCode, redeemPairingCode } from './pairing.js';
 import { state, setUser, setCouple, reset } from './state.js';
 import { showView, toast, formatDate } from './ui.js';
@@ -449,7 +450,18 @@ async function enterApp() {
   renderHome();
 }
 
+let firstAuthCheckDone = false;
+
 watchAuth(async (user) => {
+  if (!firstAuthCheckDone) {
+    // Firebase può emettere un primo evento transitorio (es. null) prima di
+    // aver finito di ripristinare la sessione salvata: aspettiamo lo stato
+    // definitivo per evitare che login/splash sbaglino la vista iniziale.
+    await auth.authStateReady();
+    user = auth.currentUser;
+    firstAuthCheckDone = true;
+  }
+
   if (!user) {
     reset();
     authMode = 'login';
