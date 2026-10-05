@@ -387,7 +387,9 @@ async function openTrip(tripId) {
         <h2>Giorno ${d.dayIndex + 1}</h2>
         <textarea data-day="${d.dayIndex}" placeholder="Cosa farete questo giorno?">${escapeHtml(d.plan || '')}</textarea>
         ${d.photoUrl ? `<img src="${d.photoUrl}" alt="Foto giorno ${d.dayIndex + 1}">` : ''}
-        <label class="capture-btn">📷 Foto del giorno
+        <label class="capture-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.2"/></svg>
+          Foto del giorno
           <input type="file" data-day-photo="${d.dayIndex}" accept="image/*" capture="environment" hidden>
         </label>
       </div>
@@ -436,6 +438,10 @@ async function enterApp() {
 watchAuth(async (user) => {
   if (!user) {
     reset();
+    authMode = 'login';
+    document.getElementById('authSubmitBtn').textContent = 'Accedi';
+    document.getElementById('authToggleBtn').textContent = 'Non hai un account? Registrati';
+    document.getElementById('authForm').reset();
     document.getElementById('appHeader').classList.add('hidden');
     document.getElementById('mainNav').classList.add('hidden');
     document.getElementById('quietModeBtn').classList.add('hidden');
