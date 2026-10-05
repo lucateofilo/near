@@ -11,9 +11,8 @@ import { createTrip, listTrips, getTripDays, updateDayPlan, uploadDayPhoto } fro
 import { SILENT_DURATIONS, activateSilentMode, deactivateSilentMode, isSilentActive } from './silent-mode.js';
 import { enableNotifications } from './fcm-client.js';
 
-const REACTION_EMOJIS = ['❤️', '😍', '😂', '😮'];
+const REACTION_EMOJIS = ['❤️', '🤍', '😍', '😂', '😮'];
 
-let pairingPollTimer = null;
 let currentSettings = null;
 
 function escapeHtml(str) {
@@ -48,7 +47,6 @@ document.getElementById('authForm').addEventListener('submit', async (e) => {
 });
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
-  stopPairingPoll();
   await logout();
 });
 
@@ -64,11 +62,13 @@ function traduciErroreAuth(err) {
   return map[err.code] || 'Si è verificato un errore. Riprova.';
 }
 
-// ---------- Pairing ----------
+// ---------- Abbinamento (ora dentro Impostazioni, non più un gate bloccante) ----------
 
 document.getElementById('generateCodeBtn').addEventListener('click', async () => {
   const code = await generatePairingCode(state.user.uid);
-  document.getElementById('myPairingCode').textContent = code;
+  const codeEl = document.getElementById('myPairingCode');
+  codeEl.textContent = code;
+  codeEl.classList.remove('hidden');
 });
 
 document.getElementById('redeemForm').addEventListener('submit', async (e) => {
@@ -78,38 +78,27 @@ document.getElementById('redeemForm').addEventListener('submit', async (e) => {
   errorEl.textContent = '';
   try {
     const { coupleId, members } = await redeemPairingCode(input.value, state.user.uid);
-    stopPairingPoll();
     setCouple(coupleId, members);
-    await enterApp();
+    toast('Abbinamento riuscito!');
+    renderSettings();
   } catch (err) {
     errorEl.textContent = err.message;
   }
 });
 
-function startPairingPoll() {
-  stopPairingPoll();
-  pairingPollTimer = setInterval(async () => {
-    const couple = await findMyCouple(state.user.uid);
-    if (couple) {
-      stopPairingPoll();
-      setCouple(couple.coupleId, couple.members);
-      await enterApp();
-    }
-  }, 5000);
-}
-
-function stopPairingPoll() {
-  if (pairingPollTimer) clearInterval(pairingPollTimer);
-  pairingPollTimer = null;
-}
-
 // ---------- Navigazione ----------
 
 document.querySelectorAll('#mainNav button').forEach((btn) => {
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', async () => {
     document.querySelectorAll('#mainNav button').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     const view = btn.dataset.view;
+
+    if (!state.coupleId) {
+      const couple = await findMyCouple(state.user.uid);
+      if (couple) setCouple(couple.coupleId, couple.members);
+    }
+
     showView(view);
     if (view === 'home') renderHome();
     if (view === 'notes') renderNotes();
@@ -136,8 +125,17 @@ document.getElementById('photoInput').addEventListener('change', async (e) => {
 });
 
 async function renderHome() {
-  const photos = await listPhotos(state.coupleId);
+  const captureLabel = document.querySelector('#view-home .capture-btn');
   const wrap = document.getElementById('photosList');
+
+  if (!state.coupleId) {
+    captureLabel.classList.add('hidden');
+    wrap.innerHTML = '<p>Abbinati al tuo partner dalle Impostazioni per iniziare a scattare foto insieme.</p>';
+    return;
+  }
+  captureLabel.classList.remove('hidden');
+
+  const photos = await listPhotos(state.coupleId);
   wrap.innerHTML = photos.map((p) => `
     <div class="photo-card">
       <img src="${p.imageUrl}" alt="Foto" loading="lazy">
@@ -172,8 +170,17 @@ document.getElementById('noteForm').addEventListener('submit', async (e) => {
 });
 
 async function renderNotes() {
-  const notes = await listNotes(state.coupleId);
+  const noteForm = document.getElementById('noteForm');
   const wrap = document.getElementById('notesList');
+
+  if (!state.coupleId) {
+    noteForm.classList.add('hidden');
+    wrap.innerHTML = '<p>Abbinati al tuo partner dalle Impostazioni per iniziare a scambiarvi bigliettini.</p>';
+    return;
+  }
+  noteForm.classList.remove('hidden');
+
+  const notes = await listNotes(state.coupleId);
   wrap.innerHTML = notes.map((n) => `
     <div class="note-card">
       <p>${escapeHtml(n.text)}</p>
@@ -185,6 +192,21 @@ async function renderNotes() {
 // ---------- Impostazioni ----------
 
 async function renderSettings() {
+  const pairedStatus = document.getElementById('pairedStatus');
+  const pairingForms = document.getElementById('pairingForms');
+  const pairedOnly = document.getElementById('pairedOnlySettings');
+
+  if (!state.coupleId) {
+    pairedStatus.classList.add('hidden');
+    pairingForms.classList.remove('hidden');
+    pairedOnly.classList.add('hidden');
+    return;
+  }
+
+  pairedStatus.classList.remove('hidden');
+  pairingForms.classList.add('hidden');
+  pairedOnly.classList.remove('hidden');
+
   currentSettings = await getSettings(state.coupleId, state.user.uid);
 
   const wrap = document.getElementById('settingsToggles');
@@ -329,8 +351,17 @@ function renderNewTripForm() {
 }
 
 async function renderTravel() {
-  const trips = await listTrips(state.coupleId);
+  const newTripBtn = document.getElementById('newTripBtn');
   const wrap = document.getElementById('tripsList');
+
+  if (!state.coupleId) {
+    newTripBtn.classList.add('hidden');
+    wrap.innerHTML = '<p>Abbinati al tuo partner dalle Impostazioni per pianificare un viaggio insieme.</p>';
+    return;
+  }
+  newTripBtn.classList.remove('hidden');
+
+  const trips = await listTrips(state.coupleId);
   wrap.innerHTML = trips.map((t) => `
     <div class="trip-card" data-trip-id="${t.id}">
       <strong>${escapeHtml(t.name)}</strong>
@@ -388,8 +419,14 @@ async function openTrip(tripId) {
 async function enterApp() {
   document.getElementById('appHeader').classList.remove('hidden');
   document.getElementById('mainNav').classList.remove('hidden');
-  currentSettings = await getSettings(state.coupleId, state.user.uid);
+
+  if (state.coupleId) {
+    currentSettings = await getSettings(state.coupleId, state.user.uid);
+  } else {
+    currentSettings = null;
+  }
   updateQuietFabVisibility();
+
   document.querySelectorAll('#mainNav button').forEach((b) => b.classList.remove('active'));
   document.querySelector('#mainNav button[data-view="home"]').classList.add('active');
   showView('home');
@@ -399,7 +436,6 @@ async function enterApp() {
 watchAuth(async (user) => {
   if (!user) {
     reset();
-    stopPairingPoll();
     document.getElementById('appHeader').classList.add('hidden');
     document.getElementById('mainNav').classList.add('hidden');
     document.getElementById('quietModeBtn').classList.add('hidden');
@@ -409,13 +445,8 @@ watchAuth(async (user) => {
 
   setUser(user);
   const couple = await findMyCouple(user.uid);
-  if (!couple) {
-    showView('pairing');
-    startPairingPoll();
-    return;
-  }
+  if (couple) setCouple(couple.coupleId, couple.members);
 
-  setCouple(couple.coupleId, couple.members);
   await enterApp();
 });
 
