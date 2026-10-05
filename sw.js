@@ -1,4 +1,4 @@
-const CACHE_NAME = 'near-shell-v1';
+const CACHE_NAME = 'near-shell-v2';
 const SHELL_FILES = [
   './',
   './index.html',
