@@ -19,19 +19,6 @@ const REACTION_EMOJIS = ['❤️', '🤍', '😍', '😂', '😮'];
 
 let currentSettings = null;
 
-// ---------- Splash iniziale ----------
-// Copre lo schermo finché Firebase Auth non ha risolto lo stato, evitando il
-// flash della schermata di login prima che scatti la vista corretta. Si
-// dissolve con un semplice fade, senza animazioni di posizione/scala.
-let splashPlayed = false;
-function dismissSplash() {
-  if (splashPlayed) return;
-  splashPlayed = true;
-  const splash = document.getElementById('splash');
-  requestAnimationFrame(() => splash.classList.add('splash-fading'));
-  setTimeout(() => splash.classList.add('hidden'), 450);
-}
-
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str ?? '';
@@ -558,7 +545,6 @@ async function enterApp() {
   document.querySelectorAll('#mainNav button').forEach((b) => b.classList.remove('active'));
   document.querySelector('#mainNav button[data-view="home"]').classList.add('active');
   showView('home');
-  dismissSplash();
   renderHome();
 }
 
@@ -568,7 +554,7 @@ watchAuth(async (user) => {
   if (!firstAuthCheckDone) {
     // Firebase può emettere un primo evento transitorio (es. null) prima di
     // aver finito di ripristinare la sessione salvata: aspettiamo lo stato
-    // definitivo per evitare che login/splash sbaglino la vista iniziale.
+    // definitivo per evitare di mostrare per un istante la vista di login.
     await auth.authStateReady();
     user = auth.currentUser;
     firstAuthCheckDone = true;
@@ -584,7 +570,6 @@ watchAuth(async (user) => {
     document.getElementById('mainNav').classList.add('hidden');
     document.getElementById('quietModeBtn').classList.add('hidden');
     showView('login');
-    dismissSplash();
     return;
   }
 

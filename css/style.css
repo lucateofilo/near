@@ -22,20 +22,6 @@ body {
 
 .hidden { display: none !important; }
 
-.splash {
-  position: fixed; inset: 0; z-index: 1000;
-  background-color: var(--sage);
-  display: flex; align-items: center; justify-content: center;
-  opacity: 1; transition: opacity .4s ease;
-}
-.splash.splash-fading { opacity: 0; pointer-events: none; }
-
-.splash-text {
-  font-family: 'Fraunces', Georgia, serif;
-  font-weight: 600; font-size: 3rem; letter-spacing: 0.01em;
-  color: #fff;
-}
-
 .app-header {
   position: fixed; top: 0; left: 0; right: 0; z-index: 10;
   min-height: var(--header-h);

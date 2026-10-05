@@ -4,6 +4,9 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 
 ## 2026-10-05
 
+### Rimosso
+- Splash screen iniziale ("Near" a schermo intero): causava due problemi, entrambi legati al fatto che la sezione di login sotto lo splash non era marcata `hidden` di default — i suoi campi email/password restavano quindi presenti e interattivi nel DOM anche per utenti già autenticati, e su mobile l'autofill del browser poteva metterli a fuoco da solo facendo comparire la tastiera senza che l'utente toccasse nulla. Inoltre lo splash si chiudeva solo a fine `watchAuth`/`findMyCouple`: se quella chiamata di rete restava in sospeso, lo splash restava bloccato sulla scritta "Near" a tempo indeterminato. Eliminati `#splash`, `dismissSplash()` e le regole CSS relative; la vista di login ora parte `hidden` come tutte le altre.
+
 ### Aggiunto (2) — scatto foto stile BeReal
 - Scatto doppio in-app (camera posteriore + selfie in sequenza, via `js/camera-capture.js` e un overlay fullscreen) al posto del semplice `<input capture>` nativo: ogni foto pubblicata salva ora `backUrl` + `frontUrl` invece del singolo `imageUrl` (fallback automatico sulle foto pubblicate col vecchio schema, nessuna migrazione dati).
 - Reciprocità: le foto di oggi del partner restano nascoste finché non hai pubblicato la tua foto di oggi.
