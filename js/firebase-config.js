@@ -11,15 +11,15 @@ import { getMessaging, isSupported } from 'https://www.gstatic.com/firebasejs/10
 // Sostituisci questi placeholder con i valori copiati da Firebase Console
 // (Project Settings > Your apps > Web app > SDK setup and configuration).
 const firebaseConfig = {
-  apiKey: 'INSERISCI_API_KEY',
-  authDomain: 'INSERISCI_AUTH_DOMAIN',
-  projectId: 'INSERISCI_PROJECT_ID',
-  messagingSenderId: 'INSERISCI_SENDER_ID',
-  appId: 'INSERISCI_APP_ID',
+  apiKey: 'AIzaSyCh4RE3CMZNTV00ghWbemG0dYz5E4RphH0',
+  authDomain: 'near-f4f99.firebaseapp.com',
+  projectId: 'near-f4f99',
+  messagingSenderId: '657269240343',
+  appId: '1:657269240343:web:573f4e612196f47d2b2252',
 };
 
 // Firebase Console > Project Settings > Cloud Messaging > Web Push certificates.
-export const VAPID_KEY = 'INSERISCI_VAPID_KEY';
+export const VAPID_KEY = 'BBeulRH2h4YI_HtYeJC07HM8e4Im6T3JN8AXbOA6LJgq8sVbXKA3y3It1LF5EJoV2ptU4bbnC09qlAVtjBi6Xrw';
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);

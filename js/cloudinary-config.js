@@ -1,8 +1,8 @@
 // Upload non firmato (unsigned upload preset): nessun segreto lato client, per design.
 // Da sostituire con i valori della tua Cloudinary Console dopo aver creato l'account
 // e un upload preset "Unsigned" (Settings > Upload > Upload presets > Add upload preset).
-export const CLOUDINARY_CLOUD_NAME = 'INSERISCI_CLOUD_NAME';
-export const CLOUDINARY_UPLOAD_PRESET = 'INSERISCI_UPLOAD_PRESET';
+export const CLOUDINARY_CLOUD_NAME = 'ypihgcio';
+export const CLOUDINARY_UPLOAD_PRESET = 'ml_default';
 
 export async function uploadToCloudinary(file, folder) {
   const formData = new FormData();

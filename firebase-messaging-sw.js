@@ -5,11 +5,11 @@ importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-com
 // importare in modo affidabile moduli ES di terze parti su iOS, quindi va ripetuta.
 // IMPORTANTE: quando incolli i valori reali di Firebase, aggiornali in ENTRAMBI i file.
 firebase.initializeApp({
-  apiKey: 'INSERISCI_API_KEY',
-  authDomain: 'INSERISCI_AUTH_DOMAIN',
-  projectId: 'INSERISCI_PROJECT_ID',
-  messagingSenderId: 'INSERISCI_SENDER_ID',
-  appId: 'INSERISCI_APP_ID',
+  apiKey: 'AIzaSyCh4RE3CMZNTV00ghWbemG0dYz5E4RphH0',
+  authDomain: 'near-f4f99.firebaseapp.com',
+  projectId: 'near-f4f99',
+  messagingSenderId: '657269240343',
+  appId: '1:657269240343:web:573f4e612196f47d2b2252',
 });
 
 const messaging = firebase.messaging();
