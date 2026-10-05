@@ -1,10 +1,9 @@
-const VIEWS = ['login', 'home', 'notes', 'travel', 'settings'];
+const VIEWS = ['login', 'home', 'notes', 'calendar', 'travel', 'ricordi', 'settings', 'account'];
 
 export function showView(name) {
   for (const v of VIEWS) {
     document.getElementById(`view-${v}`).classList.toggle('hidden', v !== name);
   }
-  document.getElementById('mainNav').classList.toggle('hidden', name === 'login');
 }
 
 let toastTimer = null;

@@ -113,19 +113,48 @@ document.getElementById('redeemForm').addEventListener('submit', async (e) => {
     const { coupleId, members } = await redeemPairingCode(input.value, state.user.uid);
     setCouple(coupleId, members);
     toast('Abbinamento riuscito!');
-    renderSettings();
+    renderAccount();
   } catch (err) {
     errorEl.textContent = err.message;
   }
 });
 
 // ---------- Navigazione ----------
+// Un'unica sidebar (scorre da sinistra) elenca tutte le pagine una sotto
+// l'altra invece di ammassare profilo/coppia/notifiche/calendario dentro
+// Impostazioni: Impostazioni ora contiene solo le preferenze dell'app,
+// Account l'identità e l'abbinamento.
 
-document.querySelectorAll('#mainNav button').forEach((btn) => {
+const VIEW_RENDERERS = {
+  home: renderHome,
+  notes: renderNotes,
+  calendar: renderCalendar,
+  travel: renderTravel,
+  ricordi: renderRicordi,
+  settings: renderSettings,
+  account: renderAccount,
+};
+
+function openNav() {
+  document.getElementById('navDrawer').classList.add('open');
+  document.getElementById('navBackdrop').classList.add('open');
+}
+
+function closeNav() {
+  document.getElementById('navDrawer').classList.remove('open');
+  document.getElementById('navBackdrop').classList.remove('open');
+}
+
+document.getElementById('menuBtn').addEventListener('click', openNav);
+document.getElementById('closeNavBtn').addEventListener('click', closeNav);
+document.getElementById('navBackdrop').addEventListener('click', closeNav);
+
+document.querySelectorAll('.nav-item').forEach((btn) => {
   btn.addEventListener('click', async () => {
-    document.querySelectorAll('#mainNav button').forEach((b) => b.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach((b) => b.classList.remove('active'));
     btn.classList.add('active');
     const view = btn.dataset.view;
+    closeNav();
 
     if (!state.coupleId) {
       const couple = await findMyCouple(state.user.uid);
@@ -133,10 +162,7 @@ document.querySelectorAll('#mainNav button').forEach((btn) => {
     }
 
     showView(view);
-    if (view === 'home') renderHome();
-    if (view === 'notes') renderNotes();
-    if (view === 'travel') renderTravel();
-    if (view === 'settings') renderSettings();
+    VIEW_RENDERERS[view]();
   });
 });
 
@@ -333,25 +359,20 @@ async function renderNotes() {
     .forEach((n) => markNoteRead(state.coupleId, n.id, state.user.uid));
 }
 
-// ---------- Impostazioni ----------
+// ---------- Impostazioni (solo preferenze dell'app: profilo e coppia sono
+// ora in Account, il calendario ha una pagina propria) ----------
 
 async function renderSettings() {
-  await renderMyAvatar();
-
-  const pairedStatus = document.getElementById('pairedStatus');
-  const pairingForms = document.getElementById('pairingForms');
-  const pairedOnly = document.getElementById('pairedOnlySettings');
+  const unpaired = document.getElementById('settingsUnpaired');
+  const content = document.getElementById('settingsContent');
 
   if (!state.coupleId) {
-    pairedStatus.classList.add('hidden');
-    pairingForms.classList.remove('hidden');
-    pairedOnly.classList.add('hidden');
+    unpaired.classList.remove('hidden');
+    content.classList.add('hidden');
     return;
   }
-
-  pairedStatus.classList.remove('hidden');
-  pairingForms.classList.add('hidden');
-  pairedOnly.classList.remove('hidden');
+  unpaired.classList.add('hidden');
+  content.classList.remove('hidden');
 
   currentSettings = await getSettings(state.coupleId, state.user.uid);
 
@@ -379,7 +400,6 @@ async function renderSettings() {
   });
 
   updateQuietFabVisibility();
-  renderEvents();
 }
 
 function updateQuietFabVisibility() {
@@ -395,7 +415,33 @@ document.getElementById('enableNotifBtn').addEventListener('click', async () => 
   }
 });
 
+// ---------- Account (profilo + abbinamento) ----------
+
+async function renderAccount() {
+  await renderMyAvatar();
+
+  const pairedStatus = document.getElementById('pairedStatus');
+  const pairingForms = document.getElementById('pairingForms');
+
+  pairedStatus.classList.toggle('hidden', !state.coupleId);
+  pairingForms.classList.toggle('hidden', !!state.coupleId);
+}
+
 // ---------- Calendario ----------
+
+async function renderCalendar() {
+  const unpaired = document.getElementById('calendarUnpaired');
+  const content = document.getElementById('calendarContent');
+
+  if (!state.coupleId) {
+    unpaired.classList.remove('hidden');
+    content.classList.add('hidden');
+    return;
+  }
+  unpaired.classList.add('hidden');
+  content.classList.remove('hidden');
+  renderEvents();
+}
 
 document.getElementById('eventForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -431,38 +477,25 @@ async function renderEvents() {
   });
 }
 
-// ---------- Drawer ricordi ----------
-// Streak, countdown anniversario e la foto di un anno fa: dati "da sbirciare",
-// non da gestire, per questo vivono in un pannello a parte invece che in Home
-// (che resta pulita) o sepolti in Impostazioni (dove nessuno li avrebbe guardati).
+// ---------- Ricordi ----------
+// Streak, countdown prossimo evento e la foto di un anno fa: dati "da
+// sbirciare", non da gestire, per questo hanno una pagina propria invece di
+// affollare la Home o restare sepolti dentro Impostazioni.
 
-document.getElementById('memoriesBtn').addEventListener('click', openDrawer);
-document.getElementById('closeDrawerBtn').addEventListener('click', closeDrawer);
-document.getElementById('drawerBackdrop').addEventListener('click', closeDrawer);
-
-function openDrawer() {
-  document.getElementById('sideDrawer').classList.add('open');
-  document.getElementById('drawerBackdrop').classList.add('open');
-  renderDrawer();
-}
-
-function closeDrawer() {
-  document.getElementById('sideDrawer').classList.remove('open');
-  document.getElementById('drawerBackdrop').classList.remove('open');
-}
-
-async function renderDrawer() {
-  const streakEl = document.getElementById('drawerStreak');
-  const eventEl = document.getElementById('drawerEvent');
-  const memoryEl = document.getElementById('drawerMemory');
+async function renderRicordi() {
+  const unpaired = document.getElementById('ricordiUnpaired');
+  const content = document.getElementById('ricordiContent');
+  const streakEl = document.getElementById('ricordiStreak');
+  const eventEl = document.getElementById('ricordiEvent');
+  const memoryEl = document.getElementById('ricordiMemory');
 
   if (!state.coupleId) {
-    streakEl.classList.add('hidden');
-    eventEl.classList.add('hidden');
-    memoryEl.classList.remove('hidden');
-    memoryEl.innerHTML = '<p>Abbinati al tuo partner dalle Impostazioni per sbloccare streak, countdown e ricordi.</p>';
+    unpaired.classList.remove('hidden');
+    content.classList.add('hidden');
     return;
   }
+  unpaired.classList.add('hidden');
+  content.classList.remove('hidden');
 
   const [photos, events] = await Promise.all([listPhotos(state.coupleId), listEvents(state.coupleId)]);
 
@@ -477,13 +510,13 @@ async function renderDrawer() {
     const next = nextUpcoming(events);
     eventEl.innerHTML = next
       ? `<h3>Prossimo evento</h3><p>${escapeHtml(next.title)} — ${next.days === 0 ? 'è oggi!' : `in ${next.days} ${next.days === 1 ? 'giorno' : 'giorni'}`}</p>`
-      : '<h3>Prossimo evento</h3><p>Aggiungi una data dalle Impostazioni.</p>';
+      : '<h3>Prossimo evento</h3><p>Aggiungi una data dal Calendario.</p>';
   }
 
   memoryEl.classList.remove('hidden');
   const memoryPhotos = await getPhotosByDate(state.coupleId, oneYearBeforeKey(romeDateKey()));
   memoryEl.innerHTML = memoryPhotos.length
-    ? '<h3>Un anno fa</h3>' + memoryPhotos.map((p) => `<img class="drawer-memory-photo" src="${photoImages(p).main}" alt="Ricordo di un anno fa" loading="lazy">`).join('')
+    ? '<h3>Un anno fa</h3>' + memoryPhotos.map((p) => `<img class="memory-photo" src="${photoImages(p).main}" alt="Ricordo di un anno fa" loading="lazy">`).join('')
     : '<h3>Un anno fa</h3><p>Nessun ricordo per oggi. L\'anno prossimo ci sarà.</p>';
 }
 
@@ -638,7 +671,6 @@ async function openTrip(tripId) {
 
 async function enterApp() {
   document.getElementById('appHeader').classList.remove('hidden');
-  document.getElementById('mainNav').classList.remove('hidden');
 
   if (state.coupleId) {
     currentSettings = await getSettings(state.coupleId, state.user.uid);
@@ -647,8 +679,8 @@ async function enterApp() {
   }
   updateQuietFabVisibility();
 
-  document.querySelectorAll('#mainNav button').forEach((b) => b.classList.remove('active'));
-  document.querySelector('#mainNav button[data-view="home"]').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach((b) => b.classList.remove('active'));
+  document.querySelector('.nav-item[data-view="home"]').classList.add('active');
   showView('home');
   renderHome();
 }
@@ -672,7 +704,7 @@ watchAuth(async (user) => {
     document.getElementById('authToggleBtn').textContent = 'Non hai un account? Registrati';
     document.getElementById('authForm').reset();
     document.getElementById('appHeader').classList.add('hidden');
-    document.getElementById('mainNav').classList.add('hidden');
+    closeNav();
     document.getElementById('quietModeBtn').classList.add('hidden');
     showView('login');
     return;

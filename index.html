@@ -19,13 +19,11 @@
 <div id="toast" class="toast"></div>
 
 <header id="appHeader" class="app-header hidden">
-  <button id="memoriesBtn" class="icon-btn icon-btn-start" title="Ricordi e numeri">
-    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 2l1.2 4.8L18 8l-4.8 1.2L12 14l-1.2-4.8L6 8l4.8-1.2L12 2Z"/></svg>
+  <button id="menuBtn" class="icon-btn icon-btn-start" title="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="20" height="20"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
   </button>
   <span class="app-title">Near</span>
-  <button id="logoutBtn" class="icon-btn" title="Esci">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="M15 16l4-4-4-4"/><path d="M19 12H9"/></svg>
-  </button>
+  <span></span>
 </header>
 
 <main id="app">
@@ -74,6 +72,20 @@
     <div id="notesList" class="notes-list"></div>
   </section>
 
+  <section id="view-calendar" class="view hidden">
+    <h1>Calendario</h1>
+    <p id="calendarUnpaired" class="hidden">Abbinati al tuo partner dalla pagina Account per iniziare a segnare le vostre date importanti.</p>
+    <div id="calendarContent" class="hidden">
+      <form id="eventForm" class="event-form">
+        <input type="text" id="eventTitle" placeholder="Titolo (es. Anniversario)" aria-label="Titolo dell'evento" required>
+        <input type="date" id="eventDate" aria-label="Data dell'evento" required>
+        <label><input type="checkbox" id="eventRecurring" checked> Si ripete ogni anno</label>
+        <button type="submit">Aggiungi</button>
+      </form>
+      <div id="eventsList" class="events-list"></div>
+    </div>
+  </section>
+
   <section id="view-travel" class="view hidden">
     <h1>Viaggio</h1>
     <button id="newTripBtn">+ Nuovo viaggio</button>
@@ -81,8 +93,30 @@
     <div id="tripDetail" class="trip-detail hidden"></div>
   </section>
 
+  <section id="view-ricordi" class="view hidden">
+    <h1>Ricordi</h1>
+    <p id="ricordiUnpaired" class="hidden">Abbinati al tuo partner dalla pagina Account per sbloccare streak, countdown e ricordi.</p>
+    <div id="ricordiContent" class="hidden">
+      <div id="ricordiStreak" class="stat-card"></div>
+      <div id="ricordiEvent" class="stat-card"></div>
+      <div id="ricordiMemory" class="stat-card"></div>
+    </div>
+  </section>
+
   <section id="view-settings" class="view hidden">
     <h1>Impostazioni</h1>
+    <p id="settingsUnpaired" class="hidden">Abbinati al tuo partner dalla pagina Account per sbloccare le impostazioni.</p>
+    <div id="settingsContent" class="hidden">
+      <div id="settingsToggles" class="settings-toggles"></div>
+      <div class="settings-block">
+        <h2>Notifiche</h2>
+        <button id="enableNotifBtn">Attiva notifiche push</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-account" class="view hidden">
+    <h1>Account</h1>
 
     <div class="settings-block">
       <h2>Il tuo profilo</h2>
@@ -110,47 +144,51 @@
       </div>
     </div>
 
-    <div id="pairedOnlySettings" class="hidden">
-      <div id="settingsToggles" class="settings-toggles"></div>
-
-      <div class="settings-block">
-        <h2>Notifiche</h2>
-        <button id="enableNotifBtn">Attiva notifiche push</button>
-      </div>
-
-      <div class="settings-block">
-        <h2>Calendario</h2>
-        <form id="eventForm" class="event-form">
-          <input type="text" id="eventTitle" placeholder="Titolo (es. Anniversario)" aria-label="Titolo dell'evento" required>
-          <input type="date" id="eventDate" aria-label="Data dell'evento" required>
-          <label><input type="checkbox" id="eventRecurring" checked> Si ripete ogni anno</label>
-          <button type="submit">Aggiungi</button>
-        </form>
-        <div id="eventsList" class="events-list"></div>
-      </div>
-    </div>
+    <button id="logoutBtn" class="btn-secondary">Esci</button>
   </section>
 
 </main>
 
-<nav id="mainNav" class="main-nav hidden">
-  <button data-view="home">
-    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.2"/></svg>
-    <span>Foto</span>
-  </button>
-  <button data-view="notes">
-    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M4 7.5 12 13l8-5.5"/></svg>
-    <span>Bigliettini</span>
-  </button>
-  <button data-view="travel">
-    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 3 10.5l6.5 2.5L12 20l2.5-6.5L21 3Z"/><path d="M9.5 13 14.5 8"/></svg>
-    <span>Viaggio</span>
-  </button>
-  <button data-view="settings">
-    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="11" cy="18" r="2" fill="currentColor" stroke="none"/></svg>
-    <span>Impostazioni</span>
-  </button>
-</nav>
+<div id="navBackdrop" class="drawer-backdrop"></div>
+<aside id="navDrawer" class="side-drawer">
+  <div class="drawer-head">
+    <span class="drawer-title">Near</span>
+    <button id="closeNavBtn" class="icon-btn" title="Chiudi">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="18" height="18"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+  <nav class="nav-list">
+    <button class="nav-item" data-view="home">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.2"/></svg>
+      <span>Foto</span>
+    </button>
+    <button class="nav-item" data-view="notes">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M4 7.5 12 13l8-5.5"/></svg>
+      <span>Bigliettini</span>
+    </button>
+    <button class="nav-item" data-view="calendar">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>
+      <span>Calendario</span>
+    </button>
+    <button class="nav-item" data-view="travel">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 3 10.5l6.5 2.5L12 20l2.5-6.5L21 3Z"/><path d="M9.5 13 14.5 8"/></svg>
+      <span>Viaggio</span>
+    </button>
+    <button class="nav-item" data-view="ricordi">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 2l1.2 4.8L18 8l-4.8 1.2L12 14l-1.2-4.8L6 8l4.8-1.2L12 2Z"/></svg>
+      <span>Ricordi</span>
+    </button>
+    <div class="nav-divider"></div>
+    <button class="nav-item" data-view="settings">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="11" cy="18" r="2" fill="currentColor" stroke="none"/></svg>
+      <span>Impostazioni</span>
+    </button>
+    <button class="nav-item" data-view="account">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>
+      <span>Account</span>
+    </button>
+  </nav>
+</aside>
 
 <button id="quietModeBtn" class="quiet-fab hidden" title="Modalità silenziosa">
   <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M15.5 4.3a8 8 0 1 0 4.2 11A6.6 6.6 0 0 1 15.5 4.3Z"/></svg>
@@ -158,19 +196,6 @@
   <svg class="sparkle sparkle-2" viewBox="0 0 24 24" fill="currentColor" width="6" height="6"><path d="M12 2l1.2 4.8L18 8l-4.8 1.2L12 14l-1.2-4.8L6 8l4.8-1.2L12 2Z"/></svg>
 </button>
 <div id="quietModePopover" class="quiet-popover hidden"></div>
-
-<div id="drawerBackdrop" class="drawer-backdrop"></div>
-<aside id="sideDrawer" class="side-drawer">
-  <div class="drawer-head">
-    <span class="drawer-title">I vostri ricordi</span>
-    <button id="closeDrawerBtn" class="icon-btn" title="Chiudi">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" width="18" height="18"><path d="M6 6l12 12M18 6 6 18"/></svg>
-    </button>
-  </div>
-  <div id="drawerStreak" class="drawer-card"></div>
-  <div id="drawerEvent" class="drawer-card"></div>
-  <div id="drawerMemory" class="drawer-card"></div>
-</aside>
 
 <script type="module" src="js/app.js"></script>
 </body>

@@ -4,6 +4,14 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 
 ## 2026-10-05
 
+### Ristrutturato — navigazione a sidebar
+- Sostituita la bottom nav a 4 voci con un'unica sidebar (scorre da sinistra, icona menu in header) che elenca ogni pagina una sotto l'altra: Foto, Bigliettini, Calendario, Viaggio, Ricordi, poi — separate da un divisore — Impostazioni e Account.
+- "Calendario" (prima un form sepolto in fondo a Impostazioni) è ora una pagina propria.
+- "Ricordi" (streak, prossimo evento, foto di un anno fa) non è più un pannello a comparsa raggiungibile da un'icona a stella: è una pagina come le altre, raggiunta dalla sidebar.
+- Impostazioni divisa in due: **Impostazioni** per le sole preferenze dell'app (notifiche, i 4 toggle), **Account** per identità e abbinamento (profilo, coppia, logout — spostato qui dall'header per liberarlo).
+- Tutte le pagine non ancora abbinate mostrano lo stesso messaggio di invito ad abbinarsi dalla pagina Account, coerente con Home/Bigliettini/Viaggio.
+- Nessun cambiamento alla palette (sage/lavanda/crema) né al font (Fraunces per i titoli): stessa identità, diversa impalcatura.
+
 ### Rifinito — layout più curato, stessa identità romantica
 - `.settings-block` non aveva mai avuto una regola CSS propria: le Impostazioni erano l'unica pagina senza le card bianche con ombra che Home/Bigliettini/Viaggio usano già, restando una lista grezza di titoli e input. Ora hanno la stessa superficie delle altre pagine.
 - Zero stati `:focus` esistevano in tutto il foglio di stile: i campi non davano alcun segnale visivo quando si entrava a scriverci. Aggiunto un anello di focus (tinta sage) su input/textarea/select/bottoni, utile anche da tastiera.
