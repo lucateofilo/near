@@ -7,6 +7,7 @@ const DAILY_NOTIFICATIONS = 4;   // costante interna, mai esposta/configurabile 
 const MIN_GAP_HOURS = 3;
 const WINDOW_START_HOUR = 9;     // 09:00
 const WINDOW_END_HOUR = 26;      // 02:00 del giorno dopo (24 + 2)
+const PAIRING_CODE_TTL_MIN = 15;
 
 const app = initializeApp({ credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)) });
 const db = getFirestore(app);
@@ -131,7 +132,24 @@ async function processPendingItems(coupleId, members, settings, collectionName, 
   }
 }
 
+async function cleanupExpiredPairingCodes() {
+  // ponytail: fetch dell'intera collection e filtro in JS invece di una query
+  // composta (used==false + createdAt<cutoff), che richiederebbe un indice
+  // composito su Firestore — per una coppia la collection ha al massimo
+  // pochi documenti totali, non serve altro. Upgrade path: query con indice
+  // dedicato se in futuro i pairing code diventano molti.
+  const cutoffMs = Date.now() - PAIRING_CODE_TTL_MIN * 60000;
+  const snap = await db.collection('pairingCodes').get();
+  const expired = snap.docs.filter((doc) => {
+    const d = doc.data();
+    return !d.used && d.createdAt && d.createdAt.toMillis() < cutoffMs;
+  });
+  await Promise.all(expired.map((doc) => doc.ref.delete()));
+}
+
 async function run() {
+  await cleanupExpiredPairingCodes();
+
   const couplesSnap = await db.collection('couples').get();
 
   for (const coupleDoc of couplesSnap.docs) {
