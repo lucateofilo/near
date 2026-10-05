@@ -15,6 +15,23 @@ const REACTION_EMOJIS = ['❤️', '🤍', '😍', '😂', '😮'];
 
 let currentSettings = null;
 
+// ---------- Splash iniziale ----------
+// Copre lo schermo finché Firebase Auth non ha risolto lo stato (evita il flash
+// della schermata di login prima che scatti la vista corretta), e nel frattempo
+// anima "Near" dal centro verso la posizione nella topbar.
+let splashPlayed = false;
+function dismissSplash() {
+  if (splashPlayed) return;
+  splashPlayed = true;
+  const splash = document.getElementById('splash');
+  const splashText = document.getElementById('splashText');
+  requestAnimationFrame(() => {
+    splashText.classList.add('splash-collapsed');
+    splash.classList.add('splash-fading');
+  });
+  setTimeout(() => splash.classList.add('hidden'), 600);
+}
+
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str ?? '';
@@ -432,6 +449,7 @@ async function enterApp() {
   document.querySelectorAll('#mainNav button').forEach((b) => b.classList.remove('active'));
   document.querySelector('#mainNav button[data-view="home"]').classList.add('active');
   showView('home');
+  dismissSplash();
   renderHome();
 }
 
@@ -446,6 +464,7 @@ watchAuth(async (user) => {
     document.getElementById('mainNav').classList.add('hidden');
     document.getElementById('quietModeBtn').classList.add('hidden');
     showView('login');
+    dismissSplash();
     return;
   }
 
