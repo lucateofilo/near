@@ -25,22 +25,15 @@ body {
 .splash {
   position: fixed; inset: 0; z-index: 1000;
   background-color: var(--sage);
-  transition: background-color .55s ease;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 1; transition: opacity .4s ease;
 }
-.splash.splash-fading { background-color: transparent; }
+.splash.splash-fading { opacity: 0; pointer-events: none; }
 
 .splash-text {
-  position: fixed; top: 50%; left: 50%; z-index: 1001;
-  transform: translate(-50%, -50%) scale(1);
   font-family: 'Fraunces', Georgia, serif;
   font-weight: 600; font-size: 3rem; letter-spacing: 0.01em;
   color: #fff;
-  transition: top .55s cubic-bezier(.4,0,.2,1), transform .55s cubic-bezier(.4,0,.2,1), color .4s ease .1s;
-}
-.splash-text.splash-collapsed {
-  top: 35px;
-  transform: translate(-50%, -50%) scale(0.5333);
-  color: var(--sage-dark);
 }
 
 .app-header {

@@ -16,20 +16,16 @@ const REACTION_EMOJIS = ['❤️', '🤍', '😍', '😂', '😮'];
 let currentSettings = null;
 
 // ---------- Splash iniziale ----------
-// Copre lo schermo finché Firebase Auth non ha risolto lo stato (evita il flash
-// della schermata di login prima che scatti la vista corretta), e nel frattempo
-// anima "Near" dal centro verso la posizione nella topbar.
+// Copre lo schermo finché Firebase Auth non ha risolto lo stato, evitando il
+// flash della schermata di login prima che scatti la vista corretta. Si
+// dissolve con un semplice fade, senza animazioni di posizione/scala.
 let splashPlayed = false;
 function dismissSplash() {
   if (splashPlayed) return;
   splashPlayed = true;
   const splash = document.getElementById('splash');
-  const splashText = document.getElementById('splashText');
-  requestAnimationFrame(() => {
-    splashText.classList.add('splash-collapsed');
-    splash.classList.add('splash-fading');
-  });
-  setTimeout(() => splash.classList.add('hidden'), 600);
+  requestAnimationFrame(() => splash.classList.add('splash-fading'));
+  setTimeout(() => splash.classList.add('hidden'), 450);
 }
 
 function escapeHtml(str) {
