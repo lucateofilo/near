@@ -7,6 +7,15 @@ service cloud.firestore {
         request.auth.uid in get(/databases/$(database)/documents/couples/$(coupleId)).data.members;
     }
 
+    // Profilo utente (nome + avatar): leggibile da chiunque sia autenticato
+    // conoscendo l'uid esatto (serve per mostrare il profilo del partner),
+    // list vietato così nessuno può elencare tutti gli utenti.
+    match /users/{uid} {
+      allow get: if request.auth != null;
+      allow list: if false;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
     // Codici di abbinamento: get ammesso solo conoscendo l'ID esatto (il codice stesso),
     // list vietato così nessuno può enumerare i codici esistenti.
     match /pairingCodes/{code} {

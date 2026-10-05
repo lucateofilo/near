@@ -5,6 +5,8 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 ## 2026-10-05
 
 ### Aggiunto
+- Profilo utente (nome + avatar): nuova collection `users/{uid}` con nome e foto avatar (caricata via Cloudinary come le altre foto); senza foto propria, l'avatar mostra le iniziali su un colore derivato dall'uid, nessun default da gestire manualmente. Modificabile da Impostazioni, sempre visibile anche prima dell'abbinamento.
+- Card del partner in Home: avatar + nome visibili non appena si è abbinati, non solo nel testo di stato in Impostazioni.
 - Scaffold iniziale dell'app: PWA vanilla HTML/CSS/JS, Firebase (Auth, Firestore, Cloud Messaging), Cloudinary per lo storage foto (al posto di Firebase Storage, che richiede piano Blaze anche solo per l'attivazione).
 - Flusso di abbinamento coppia tramite codice generato in-app (niente creazione manuale utenti/documenti in console): registrazione libera + abbinamento opzionale, spostato dentro Impostazioni, non più un gate bloccante al primo accesso.
 - Scheduler Node (`scripts/notify-scheduler.mjs`) su GitHub Actions a cron (ogni 5 minuti): genera le 4 notifiche random giornaliere (09:00–02:00, gap minimo 3h, fuso Europe/Rome calcolato con API Intl native), invia i push di foto/bigliettini in coda, rispetta modalità silenziosa e pausa viaggio. Nessuna Cloud Function, per restare a costo zero.
@@ -14,6 +16,8 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 - Deploy automatico su GitHub Pages via GitHub Actions ad ogni push su `main`.
 
 ### Corretto
+- Notifiche push mai recapitate: `sw.js` (cache shell) e `firebase-messaging-sw.js` (push FCM) erano due service worker registrati sulla stessa scope `/`; ad ogni apertura dell'app `sw.js` veniva ri-registrato e con il suo `skipWaiting()` scalzava quello delle notifiche, che restava quindi attivo solo per pochi istanti dopo "Attiva notifiche push". Unita la gestione push dentro `sw.js` (unico service worker), rimosso `firebase-messaging-sw.js`.
+- Layout desktop: header, nav e FAB modalità silenziosa erano `position: fixed` stirati su tutta la larghezza della finestra; da 560px in su restano ora ancorati alla stessa colonna centrale (480px) del contenuto.
 - Header `position: sticky` → `position: fixed`: evitava che il contenuto sottostante "saltasse" quando l'header compariva dopo il login, causando testo tagliato/sovrapposto.
 - Service worker senza `skipWaiting()`/`clients.claim()`: un nuovo service worker restava in stato "waiting" finché tutte le istanze della pagina non venivano chiuse, quindi gli aggiornamenti non si vedevano con un semplice reload.
 - `onAuthStateChanged` può emettere un primo evento transitorio (`user: null`) prima di aver finito di ripristinare la sessione salvata: intercettato ora con `auth.authStateReady()` per evitare che lo splash sparisse mostrando per un istante il login anche a chi era già autenticato.

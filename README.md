@@ -6,7 +6,7 @@ Stack: HTML/CSS/JS vanilla (nessun bundler), Firebase (Auth, Firestore, Cloud Me
 
 ## Setup
 
-1. **Firebase**: crea un progetto su [console.firebase.google.com](https://console.firebase.google.com), attiva Authentication (Email/Password) e Firestore Database (modalità Produzione). Copia la configurazione Web App in `js/firebase-config.js` **e** in `firebase-messaging-sw.js` (vanno tenuti sincronizzati a mano, il service worker non può importare moduli ES di terze parti in modo affidabile su iOS).
+1. **Firebase**: crea un progetto su [console.firebase.google.com](https://console.firebase.google.com), attiva Authentication (Email/Password) e Firestore Database (modalità Produzione). Copia la configurazione Web App in `js/firebase-config.js` **e** in `sw.js` (vanno tenuti sincronizzati a mano, il service worker non può importare moduli ES di terze parti in modo affidabile su iOS).
 2. **Cloudinary**: crea un account gratuito su [cloudinary.com](https://cloudinary.com), crea un **upload preset "Unsigned"** (Settings → Upload → Upload presets — occhio al preset `ml_default` di default, che nasce "Signed" e va cambiato), copia `cloud_name` e nome del preset in `js/cloudinary-config.js`.
 3. **Push**: genera una VAPID key (Firebase Console → Project Settings → Cloud Messaging → Web Push certificates) e incollala in `js/firebase-config.js`.
 4. **Security rules**: `npm install -g firebase-tools && firebase login && firebase deploy --only firestore:rules` (usa `firestore.rules` già presente nel repo, serve anche `.firebaserc`/`firebase.json` già nel repo).

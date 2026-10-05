@@ -1,4 +1,29 @@
-const CACHE_NAME = 'near-shell-v6';
+// Messaggistica push unita qui (invece che in un secondo service worker
+// separato): due SW registrati sulla stessa scope '/' si scalzano a vicenda
+// ad ogni apertura dell'app (questo file fa skipWaiting() ad ogni reload),
+// quindi quello delle notifiche smetteva di ricevere i push non appena
+// l'utente riapriva l'app. Un solo SW per tutta la scope elimina il problema.
+importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js');
+
+firebase.initializeApp({
+  apiKey: 'AIzaSyCh4RE3CMZNTV00ghWbemG0dYz5E4RphH0',
+  authDomain: 'near-f4f99.firebaseapp.com',
+  projectId: 'near-f4f99',
+  messagingSenderId: '657269240343',
+  appId: '1:657269240343:web:573f4e612196f47d2b2252',
+});
+
+firebase.messaging().onBackgroundMessage((payload) => {
+  const title = payload.notification?.title || 'Near';
+  const options = {
+    body: payload.notification?.body || '',
+    icon: 'icons/icon-192.png',
+  };
+  self.registration.showNotification(title, options);
+});
+
+const CACHE_NAME = 'near-shell-v7';
 const SHELL_FILES = [
   './',
   './index.html',

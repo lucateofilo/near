@@ -11,7 +11,7 @@ export async function enableNotifications(coupleId, uid) {
   const messaging = await getMessagingIfSupported();
   if (!messaging) throw new Error('Push non supportate su questo dispositivo/browser.');
 
-  const registration = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+  const registration = await navigator.serviceWorker.ready;
   const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
   if (!token) throw new Error('Impossibile ottenere il token FCM.');
 

@@ -11,6 +11,7 @@ import { addEvent, listEvents, daysUntil } from './calendar.js';
 import { createTrip, listTrips, getTripDays, updateDayPlan, uploadDayPhoto } from './travel-mode.js';
 import { SILENT_DURATIONS, activateSilentMode, deactivateSilentMode, isSilentActive } from './silent-mode.js';
 import { enableNotifications } from './fcm-client.js';
+import { getProfile, saveProfileName, uploadAvatar, avatarHtml, renderAvatarInto } from './profile.js';
 
 const REACTION_EMOJIS = ['❤️', '🤍', '😍', '😂', '😮'];
 
@@ -74,6 +75,34 @@ function traduciErroreAuth(err) {
     'auth/weak-password': 'Password troppo corta (minimo 6 caratteri).',
   };
   return map[err.code] || 'Si è verificato un errore. Riprova.';
+}
+
+// ---------- Profilo (nome + avatar) ----------
+
+document.getElementById('profileNameInput').addEventListener('blur', async (e) => {
+  const name = e.target.value.trim();
+  await saveProfileName(state.user.uid, name);
+});
+
+document.getElementById('avatarInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    await uploadAvatar(state.user.uid, file);
+    await renderMyAvatar();
+    toast('Avatar aggiornato!');
+  } catch (err) {
+    toast('Errore durante il caricamento dell\'avatar.');
+    console.error(err);
+  } finally {
+    e.target.value = '';
+  }
+});
+
+async function renderMyAvatar() {
+  const profile = await getProfile(state.user.uid, state.user.email);
+  renderAvatarInto(document.getElementById('myAvatar'), profile, 56);
+  document.getElementById('profileNameInput').value = profile.name;
 }
 
 // ---------- Abbinamento (ora dentro Impostazioni, non più un gate bloccante) ----------
@@ -141,13 +170,25 @@ document.getElementById('photoInput').addEventListener('change', async (e) => {
 async function renderHome() {
   const captureLabel = document.querySelector('#view-home .capture-btn');
   const wrap = document.getElementById('photosList');
+  const partnerCard = document.getElementById('partnerCard');
 
   if (!state.coupleId) {
     captureLabel.classList.add('hidden');
+    partnerCard.classList.add('hidden');
     wrap.innerHTML = '<p>Abbinati al tuo partner dalle Impostazioni per iniziare a scattare foto insieme.</p>';
     return;
   }
   captureLabel.classList.remove('hidden');
+
+  const partnerProfile = await getProfile(state.partnerUid);
+  partnerCard.innerHTML = `
+    ${avatarHtml(partnerProfile, 44)}
+    <div>
+      <div class="partner-name">${escapeHtml(partnerProfile.name) || 'Il tuo partner'}</div>
+      <div class="partner-sub">Siete abbinati</div>
+    </div>
+  `;
+  partnerCard.classList.remove('hidden');
 
   const photos = await listPhotos(state.coupleId);
   wrap.innerHTML = photos.map((p) => `
@@ -206,6 +247,8 @@ async function renderNotes() {
 // ---------- Impostazioni ----------
 
 async function renderSettings() {
+  await renderMyAvatar();
+
   const pairedStatus = document.getElementById('pairedStatus');
   const pairingForms = document.getElementById('pairingForms');
   const pairedOnly = document.getElementById('pairedOnlySettings');
