@@ -7,6 +7,7 @@
   --muted: #8A867C;
   --danger: #C97B63;
   --radius: 14px;
+  --header-h: 70px;
 }
 
 * { box-sizing: border-box; }
@@ -22,12 +23,19 @@ body {
 .hidden { display: none !important; }
 
 .app-header {
-  position: sticky; top: 0; z-index: 10;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+  min-height: var(--header-h);
   display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-  padding: 16px 18px;
+  padding: 0 18px;
   background: var(--cream);
   border-bottom: 1px solid rgba(0,0,0,0.06);
 }
+
+/* L'header è fuori flusso (fixed): riserviamo lo spazio sotto di esso solo
+   quando è visibile, via puro CSS, cosi' non c'è mai un salto di layout
+   quando compare dopo il login (prima era position:sticky e "spingeva giù"
+   il contenuto in un frame separato, causando un effetto di testo tagliato). */
+#appHeader:not(.hidden) + #app { padding-top: calc(var(--header-h) + 16px); }
 .app-title {
   grid-column: 2; justify-self: center;
   font-family: 'Fraunces', Georgia, serif;
