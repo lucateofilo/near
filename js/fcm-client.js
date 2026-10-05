@@ -1,6 +1,7 @@
 import { db, getMessagingIfSupported, VAPID_KEY } from './firebase-config.js';
 import { doc, setDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
 import { getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging.js';
+import { toast } from './ui.js';
 
 export async function enableNotifications(coupleId, uid) {
   if (!('Notification' in window)) throw new Error('Notifiche non supportate su questo browser.');
@@ -17,7 +18,9 @@ export async function enableNotifications(coupleId, uid) {
 
   await setDoc(doc(db, 'couples', coupleId, 'settings', uid), { fcmTokens: arrayUnion(token) }, { merge: true });
 
-  onMessage(messaging, (payload) => console.log('Notifica in foreground:', payload));
+  // in foreground FCM non mostra la notifica di sistema da sola: con l'app aperta
+  // il payload arrivava qui e finiva solo in console, invisibile all'utente
+  onMessage(messaging, (payload) => toast(payload.notification?.body || 'Nuova notifica'));
 
   return token;
 }

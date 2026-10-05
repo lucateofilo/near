@@ -4,6 +4,11 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 
 ## 2026-10-05
 
+### Corretto (2)
+- Notifiche in foreground invisibili: `onMessage` (ricevuto quando l'app è già aperta) finiva solo in `console.log`, senza mostrare nulla all'utente. Ora mostra un toast col testo della notifica.
+- Token FCM non registrati (`NotRegistered`, es. da reinstallazioni o vecchie registrazioni SW) restavano per sempre in `fcmTokens`, venendo ritentati a ogni invio senza successo. Lo scheduler ora li rimuove dal documento `settings` dopo un fallimento `messaging/registration-token-not-registered`.
+- Scheduler senza alcun log: impossibile distinguere "nessun token salvato" da "push inviato ma non mostrato". Aggiunto logging minimo per contare invii riusciti/falliti.
+
 ### Aggiunto
 - Profilo utente (nome + avatar): nuova collection `users/{uid}` con nome e foto avatar (caricata via Cloudinary come le altre foto); senza foto propria, l'avatar mostra le iniziali su un colore derivato dall'uid, nessun default da gestire manualmente. Modificabile da Impostazioni, sempre visibile anche prima dell'abbinamento.
 - Card del partner in Home: avatar + nome visibili non appena si è abbinati, non solo nel testo di stato in Impostazioni.

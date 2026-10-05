@@ -1,5 +1,5 @@
 import { initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore, Timestamp } from 'firebase-admin/firestore';
+import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
 import { romeDateKey, romeWallTimeToDate } from '../js/date-utils.js';
 
@@ -80,16 +80,32 @@ async function isTravelPaused(coupleId) {
   });
 }
 
-async function sendPush(members, settings, { title, body, data }) {
+async function sendPush(coupleId, members, settings, { title, body, data }) {
   const recipients = members.filter((uid) => !isSilenced(settings[uid]));
-  const tokens = recipients.flatMap((uid) => settings[uid]?.fcmTokens || []).filter(Boolean);
+  // token -> uid, per poter rimuovere solo quelli non registrati dal doc giusto
+  const tokenOwners = recipients.flatMap((uid) => (settings[uid]?.fcmTokens || []).map((t) => [t, uid]));
+  const tokens = tokenOwners.map(([t]) => t).filter(Boolean);
   if (tokens.length === 0) {
     console.log(`[push] "${data.type}": nessun token (${members.length} membri, ${recipients.length} non silenziati)`);
     return;
   }
   const res = await messaging.sendEachForMulticast({ tokens, notification: { title, body }, data });
   console.log(`[push] "${data.type}": ${res.successCount}/${tokens.length} inviati`);
-  res.responses.forEach((r, i) => { if (!r.success) console.error(`[push] token ${i} fallito:`, r.error?.message); });
+
+  const staleByUid = new Map();
+  res.responses.forEach((r, i) => {
+    if (r.success) return;
+    console.error(`[push] token ${i} fallito:`, r.error?.message);
+    if (r.error?.code === 'messaging/registration-token-not-registered') {
+      const [token, uid] = tokenOwners[i];
+      if (!staleByUid.has(uid)) staleByUid.set(uid, []);
+      staleByUid.get(uid).push(token);
+    }
+  });
+  await Promise.all([...staleByUid].map(([uid, staleTokens]) =>
+    db.doc(`couples/${coupleId}/settings/${uid}`).update({ fcmTokens: FieldValue.arrayRemove(...staleTokens) })
+  ));
+  if (staleByUid.size) console.log(`[push] rimossi token non registrati per ${staleByUid.size} utenti`);
 }
 
 async function processRandomSlots(coupleId, members, settings, dateKey) {
@@ -116,7 +132,7 @@ async function processRandomSlots(coupleId, members, settings, dateKey) {
     });
 
     if (sent) {
-      await sendPush(members, settings, {
+      await sendPush(coupleId, members, settings, {
         title: 'Near',
         body: 'È il momento di scattare una foto insieme, proprio ora!',
         data: { type: 'photo_prompt' },
@@ -131,7 +147,7 @@ async function processPendingItems(coupleId, members, settings, collectionName, 
     const item = doc.data();
     const partnerUid = members.find((uid) => uid !== item.uid);
     if (partnerUid && !isSilenced(settings[partnerUid])) {
-      await sendPush([partnerUid], settings, buildNotification(doc.id, item));
+      await sendPush(coupleId, [partnerUid], settings, buildNotification(doc.id, item));
     }
     await doc.ref.update({ notifiedToPartner: true });
   }
