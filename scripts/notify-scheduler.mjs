@@ -83,8 +83,13 @@ async function isTravelPaused(coupleId) {
 async function sendPush(members, settings, { title, body, data }) {
   const recipients = members.filter((uid) => !isSilenced(settings[uid]));
   const tokens = recipients.flatMap((uid) => settings[uid]?.fcmTokens || []).filter(Boolean);
-  if (tokens.length === 0) return;
-  await messaging.sendEachForMulticast({ tokens, notification: { title, body }, data });
+  if (tokens.length === 0) {
+    console.log(`[push] "${data.type}": nessun token (${members.length} membri, ${recipients.length} non silenziati)`);
+    return;
+  }
+  const res = await messaging.sendEachForMulticast({ tokens, notification: { title, body }, data });
+  console.log(`[push] "${data.type}": ${res.successCount}/${tokens.length} inviati`);
+  res.responses.forEach((r, i) => { if (!r.success) console.error(`[push] token ${i} fallito:`, r.error?.message); });
 }
 
 async function processRandomSlots(coupleId, members, settings, dateKey) {
