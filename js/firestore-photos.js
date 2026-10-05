@@ -82,6 +82,15 @@ export async function listPhotos(coupleId) {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
+// Query dedicata (non limitata agli ultimi 100 scatti) per pescare le foto di
+// un giorno preciso, anche molto indietro nel tempo — serve al ricordo "un anno fa".
+export async function getPhotosByDate(coupleId, dateKey) {
+  const snap = await getDocs(query(
+    collection(db, 'couples', coupleId, 'photos'), where('scheduleDate', '==', dateKey)
+  ));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
 export async function reactToPhoto(coupleId, photoId, uid, emoji) {
   await updateDoc(doc(db, 'couples', coupleId, 'photos', photoId), { [`reactions.${uid}`]: emoji });
 }

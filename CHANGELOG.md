@@ -4,6 +4,12 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 
 ## 2026-10-05
 
+### Aggiunto (3) — pannello "Ricordi"
+- Nuovo pannello laterale (icona a stella in header, scorre da destra) con streak, countdown del prossimo anniversario e la foto di un anno fa — dati da sbirciare, non da gestire, prima erano sepolti in Impostazioni (lo streak) o assenti del tutto (il ricordo). La home resta pulita, le Impostazioni restano la pagina di gestione (form evento, abbinamento), non quella di consultazione.
+- Streak e countdown nel pannello rispettano i toggle già esistenti `streakEnabled`/`calendarEnabled` in Impostazioni, prima presenti solo nella UI ma senza alcun effetto reale.
+- Ricordo "un anno fa": se in quella data (civile, fuso Roma) esiste una foto pubblicata, viene mostrata nel pannello. Nuova query dedicata (`getPhotosByDate`) perché la lista foto normale è limitata agli ultimi 100 scatti e non arriva mai così indietro.
+- Bigliettini con "✓ Letto": quando apri la vista Bigliettini, quelli del partner non ancora letti vengono marcati; i tuoi mostrano la spunta quando il partner li ha visti. Richiesto un aggiornamento alle Firestore Security Rules (`notes` permetteva zero update): ora il solo update ammesso è il destinatario che tocca esclusivamente il campo `readBy`, pubblicato in produzione.
+
 ### Rimosso
 - Splash screen iniziale ("Near" a schermo intero): causava due problemi, entrambi legati al fatto che la sezione di login sotto lo splash non era marcata `hidden` di default — i suoi campi email/password restavano quindi presenti e interattivi nel DOM anche per utenti già autenticati, e su mobile l'autofill del browser poteva metterli a fuoco da solo facendo comparire la tastiera senza che l'utente toccasse nulla. Inoltre lo splash si chiudeva solo a fine `watchAuth`/`findMyCouple`: se quella chiamata di rete restava in sospeso, lo splash restava bloccato sulla scritta "Near" a tempo indeterminato. Eliminati `#splash`, `dismissSplash()` e le regole CSS relative; la vista di login ora parte `hidden` come tutte le altre.
 

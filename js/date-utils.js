@@ -20,6 +20,14 @@ export function romeDateKey(date = new Date()) {
   return `${p.year}-${p.month}-${p.day}`;
 }
 
+// Sottrazione civile (anno-mese-giorno), non a millisecondi: evita lo sfasamento
+// di un giorno che l'aritmetica su epoch darebbe a cavallo di un anno bisestile.
+export function oneYearBeforeKey(dateKey) {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const dt = new Date(Date.UTC(y - 1, m - 1, d));
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`;
+}
+
 // Restituisce un Date assoluto corrispondente a "dateKey alle hour:minute, ora civile di Roma".
 // hour può essere >= 24 per esprimere orari dopo mezzanotte del giorno dopo (es. 26 = 02:00 del giorno dopo).
 export function romeWallTimeToDate(dateKey, hour, minute) {

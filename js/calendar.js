@@ -19,3 +19,12 @@ export function daysUntil(dateStr, recurring) {
   }
   return Math.ceil((target - today) / 86400000);
 }
+
+// Il prossimo evento futuro (il countdown più piccolo non negativo); gli eventi
+// non ricorrenti già passati non rientrano mai, non hanno un'occorrenza successiva.
+export function nextUpcoming(events) {
+  return events
+    .map((ev) => ({ ...ev, days: daysUntil(ev.date, ev.recurring) }))
+    .filter((ev) => ev.days >= 0)
+    .sort((a, b) => a.days - b.days)[0] || null;
+}

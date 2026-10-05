@@ -3,13 +3,13 @@ import { auth } from './firebase-config.js';
 import { findMyCouple, generatePairingCode, redeemPairingCode } from './pairing.js';
 import { state, setUser, setCouple, reset } from './state.js';
 import { showView, toast, formatDate } from './ui.js';
-import { uploadPhoto, listPhotos, reactToPhoto, getPendingSlot, photoImages } from './firestore-photos.js';
+import { uploadPhoto, listPhotos, getPhotosByDate, reactToPhoto, getPendingSlot, photoImages } from './firestore-photos.js';
 import { startCamera, stopCamera, captureFrame } from './camera-capture.js';
-import { romeDateKey } from './date-utils.js';
-import { sendNote, listNotes } from './firestore-notes.js';
+import { romeDateKey, oneYearBeforeKey } from './date-utils.js';
+import { sendNote, listNotes, markNoteRead } from './firestore-notes.js';
 import { SETTINGS_DEFS, getSettings, setSetting } from './settings.js';
 import { computeStreak } from './streak.js';
-import { addEvent, listEvents, daysUntil } from './calendar.js';
+import { addEvent, listEvents, daysUntil, nextUpcoming } from './calendar.js';
 import { createTrip, listTrips, getTripDays, updateDayPlan, uploadDayPhoto } from './travel-mode.js';
 import { SILENT_DURATIONS, activateSilentMode, deactivateSilentMode, isSilentActive } from './silent-mode.js';
 import { enableNotifications } from './fcm-client.js';
@@ -292,12 +292,22 @@ async function renderNotes() {
   noteForm.classList.remove('hidden');
 
   const notes = await listNotes(state.coupleId);
-  wrap.innerHTML = notes.map((n) => `
+  wrap.innerHTML = notes.map((n) => {
+    const mine = n.uid === state.user.uid;
+    const read = !!n.readBy?.[state.partnerUid];
+    return `
     <div class="note-card">
       <p>${escapeHtml(n.text)}</p>
-      <div class="note-meta">${n.uid === state.user.uid ? 'Tu' : 'Il tuo partner'} · ${formatDate(n.createdAt?.toDate?.() ?? n.createdAt)}</div>
+      <div class="note-meta">${mine ? 'Tu' : 'Il tuo partner'} · ${formatDate(n.createdAt?.toDate?.() ?? n.createdAt)}${mine && read ? ' · ✓ Letto' : ''}</div>
     </div>
-  `).join('') || '<p>Nessun bigliettino ancora.</p>';
+  `;
+  }).join('') || '<p>Nessun bigliettino ancora.</p>';
+
+  // i bigliettini del partner non ancora letti vengono marcati ora: è l'apertura
+  // della vista "Bigliettini" stessa il momento in cui li hai effettivamente visti
+  notes
+    .filter((n) => n.uid !== state.user.uid && !n.readBy?.[state.user.uid])
+    .forEach((n) => markNoteRead(state.coupleId, n.id, state.user.uid));
 }
 
 // ---------- Impostazioni ----------
@@ -347,7 +357,6 @@ async function renderSettings() {
 
   updateQuietFabVisibility();
   renderEvents();
-  renderStreak();
 }
 
 function updateQuietFabVisibility() {
@@ -388,10 +397,60 @@ async function renderEvents() {
   `).join('') || '<p>Nessun evento ancora.</p>';
 }
 
-async function renderStreak() {
-  const photos = await listPhotos(state.coupleId);
-  const streak = computeStreak(photos);
-  document.getElementById('streakCount').textContent = `${streak} ${streak === 1 ? 'giorno' : 'giorni'} consecutivi`;
+// ---------- Drawer ricordi ----------
+// Streak, countdown anniversario e la foto di un anno fa: dati "da sbirciare",
+// non da gestire, per questo vivono in un pannello a parte invece che in Home
+// (che resta pulita) o sepolti in Impostazioni (dove nessuno li avrebbe guardati).
+
+document.getElementById('memoriesBtn').addEventListener('click', openDrawer);
+document.getElementById('closeDrawerBtn').addEventListener('click', closeDrawer);
+document.getElementById('drawerBackdrop').addEventListener('click', closeDrawer);
+
+function openDrawer() {
+  document.getElementById('sideDrawer').classList.add('open');
+  document.getElementById('drawerBackdrop').classList.add('open');
+  renderDrawer();
+}
+
+function closeDrawer() {
+  document.getElementById('sideDrawer').classList.remove('open');
+  document.getElementById('drawerBackdrop').classList.remove('open');
+}
+
+async function renderDrawer() {
+  const streakEl = document.getElementById('drawerStreak');
+  const eventEl = document.getElementById('drawerEvent');
+  const memoryEl = document.getElementById('drawerMemory');
+
+  if (!state.coupleId) {
+    streakEl.classList.add('hidden');
+    eventEl.classList.add('hidden');
+    memoryEl.classList.remove('hidden');
+    memoryEl.innerHTML = '<p>Abbinati al tuo partner dalle Impostazioni per sbloccare streak, countdown e ricordi.</p>';
+    return;
+  }
+
+  const [photos, events] = await Promise.all([listPhotos(state.coupleId), listEvents(state.coupleId)]);
+
+  streakEl.classList.toggle('hidden', currentSettings?.streakEnabled === false);
+  if (currentSettings?.streakEnabled !== false) {
+    const streak = computeStreak(photos);
+    streakEl.innerHTML = `<h3>Streak</h3><p>${streak} ${streak === 1 ? 'giorno' : 'giorni'} consecutivi</p>`;
+  }
+
+  eventEl.classList.toggle('hidden', currentSettings?.calendarEnabled === false);
+  if (currentSettings?.calendarEnabled !== false) {
+    const next = nextUpcoming(events);
+    eventEl.innerHTML = next
+      ? `<h3>Prossimo anniversario</h3><p>${escapeHtml(next.title)} — ${next.days === 0 ? 'è oggi!' : `in ${next.days} ${next.days === 1 ? 'giorno' : 'giorni'}`}</p>`
+      : '<h3>Prossimo anniversario</h3><p>Aggiungi una data dalle Impostazioni.</p>';
+  }
+
+  memoryEl.classList.remove('hidden');
+  const memoryPhotos = await getPhotosByDate(state.coupleId, oneYearBeforeKey(romeDateKey()));
+  memoryEl.innerHTML = memoryPhotos.length
+    ? '<h3>Un anno fa</h3>' + memoryPhotos.map((p) => `<img class="drawer-memory-photo" src="${photoImages(p).main}" alt="Ricordo di un anno fa" loading="lazy">`).join('')
+    : '<h3>Un anno fa</h3><p>Nessun ricordo per oggi. L\'anno prossimo ci sarà.</p>';
 }
 
 // ---------- Modalità silenziosa ----------

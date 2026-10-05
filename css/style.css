@@ -47,6 +47,7 @@ body {
   background: none; border: none; cursor: pointer; color: var(--muted);
   width: auto; padding: 4px; display: flex; margin-bottom: 0;
 }
+.icon-btn-start { grid-column: 1; justify-self: start; }
 
 main#app { max-width: 480px; margin: 0 auto; padding: 16px; }
 
@@ -242,6 +243,47 @@ button:active { opacity: 0.8; }
   position: absolute; top: calc(20px + env(safe-area-inset-top)); right: 20px;
   width: auto; background: rgba(0,0,0,0.4); color: #fff; padding: 8px 14px; margin: 0;
 }
+
+/* Pannello laterale "Ricordi": streak, countdown anniversario e la foto di un
+   anno fa. Scorre da destra sopra tutto il resto, cosi' questi dati hanno uno
+   spazio proprio invece di affollare la home o restare sepolti in Impostazioni. */
+.drawer-backdrop {
+  position: fixed; inset: 0; z-index: 400;
+  background: rgba(0,0,0,0.35);
+  opacity: 0; pointer-events: none; transition: opacity .25s ease;
+}
+.drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+
+.side-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 401;
+  width: min(320px, 86vw);
+  background: var(--cream);
+  box-shadow: -8px 0 24px rgba(0,0,0,0.15);
+  padding: 20px 18px;
+  padding-top: calc(20px + env(safe-area-inset-top));
+  transform: translateX(100%);
+  transition: transform .3s ease;
+  overflow-y: auto;
+}
+.side-drawer.open { transform: translateX(0); }
+
+.drawer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.drawer-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 600; font-size: 1.2rem; color: var(--sage-dark);
+}
+
+.drawer-card {
+  background: #fff; border-radius: var(--radius); padding: 14px; margin-bottom: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.drawer-card h3 {
+  margin: 0 0 6px; font-size: 0.78rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.drawer-card p { margin: 0; }
+.drawer-memory-photo { width: 100%; border-radius: calc(var(--radius) - 4px); margin-top: 8px; display: block; }
+.drawer-memory-photo + .drawer-memory-photo { margin-top: 8px; }
 
 /* Da schermi larghi (desktop) in su: header e nav restano ancorati alla
    stessa colonna centrale di main#app invece di stirarsi su tutta la
