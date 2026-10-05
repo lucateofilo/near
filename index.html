@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#9CAF88">
+<title>Near</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="toast" class="toast"></div>
+
+<header id="appHeader" class="app-header hidden">
+  <span class="app-title">Near</span>
+  <button id="logoutBtn" class="icon-btn" title="Esci">⎋</button>
+</header>
+
+<main id="app">
+
+  <section id="view-login" class="view">
+    <div class="auth-card">
+      <h1>Near</h1>
+      <p class="subtitle">Il vostro spazio privato, a due.</p>
+      <form id="authForm">
+        <input type="email" id="authEmail" placeholder="Email" required autocomplete="email">
+        <input type="password" id="authPassword" placeholder="Password" required autocomplete="current-password" minlength="6">
+        <button type="submit" id="authSubmitBtn">Accedi</button>
+      </form>
+      <button id="authToggleBtn" class="link-btn">Non hai un account? Registrati</button>
+      <p id="authError" class="error-text"></p>
+    </div>
+  </section>
+
+  <section id="view-pairing" class="view hidden">
+    <div class="auth-card">
+      <h1>Quasi pronti</h1>
+      <p class="subtitle">Collegati al tuo partner per iniziare.</p>
+
+      <div class="pairing-block">
+        <h2>Il tuo codice</h2>
+        <p>Condividilo con il tuo partner:</p>
+        <div id="myPairingCode" class="pairing-code">—</div>
+        <button id="generateCodeBtn">Genera codice</button>
+      </div>
+
+      <div class="pairing-block">
+        <h2>Hai un codice?</h2>
+        <form id="redeemForm">
+          <input type="text" id="redeemInput" placeholder="Es. AB12CD" maxlength="6" style="text-transform:uppercase">
+          <button type="submit">Unisciti</button>
+        </form>
+        <p id="pairingError" class="error-text"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-home" class="view hidden">
+    <h1>Foto</h1>
+    <label class="capture-btn">
+      📷 Scatta una foto
+      <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
+    </label>
+    <div id="photosList" class="photos-list"></div>
+  </section>
+
+  <section id="view-notes" class="view hidden">
+    <h1>Bigliettini</h1>
+    <form id="noteForm" class="note-form">
+      <textarea id="noteText" placeholder="Scrivi un pensiero carino..." maxlength="500" required></textarea>
+      <button type="submit">Invia</button>
+    </form>
+    <div id="notesList" class="notes-list"></div>
+  </section>
+
+  <section id="view-travel" class="view hidden">
+    <h1>Viaggio</h1>
+    <button id="newTripBtn">+ Nuovo viaggio</button>
+    <div id="tripsList" class="trips-list"></div>
+    <div id="tripDetail" class="trip-detail hidden"></div>
+  </section>
+
+  <section id="view-settings" class="view hidden">
+    <h1>Impostazioni</h1>
+    <div id="settingsToggles" class="settings-toggles"></div>
+
+    <div class="settings-block">
+      <h2>Notifiche</h2>
+      <button id="enableNotifBtn">Attiva notifiche push</button>
+    </div>
+
+    <div class="settings-block">
+      <h2>Calendario</h2>
+      <form id="eventForm" class="event-form">
+        <input type="text" id="eventTitle" placeholder="Titolo (es. Anniversario)" required>
+        <input type="date" id="eventDate" required>
+        <label><input type="checkbox" id="eventRecurring" checked> Si ripete ogni anno</label>
+        <button type="submit">Aggiungi</button>
+      </form>
+      <div id="eventsList" class="events-list"></div>
+    </div>
+
+    <div class="settings-block">
+      <h2>Streak</h2>
+      <p id="streakCount">—</p>
+    </div>
+  </section>
+
+</main>
+
+<nav id="mainNav" class="main-nav hidden">
+  <button data-view="home">📷<span>Foto</span></button>
+  <button data-view="notes">💌<span>Bigliettini</span></button>
+  <button data-view="travel">✈️<span>Viaggio</span></button>
+  <button data-view="settings">⚙️<span>Impostazioni</span></button>
+</nav>
+
+<button id="quietModeBtn" class="quiet-fab hidden" title="Modalità silenziosa">🌙✨</button>
+<div id="quietModePopover" class="quiet-popover hidden"></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
