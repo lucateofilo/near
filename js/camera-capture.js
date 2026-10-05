@@ -10,10 +10,20 @@ export function stopCamera(stream) {
   stream?.getTracks().forEach((t) => t.stop());
 }
 
-export function captureFrame(videoEl) {
+// Molti browser mobile (es. Chrome su Android) consegnano lo stream della
+// fotocamera frontale già specchiato a livello di driver, per far "sentire"
+// naturale l'anteprima come davanti a uno specchio. Lo scatto però va salvato
+// com'è realmente (non specchiato): per la frontale ribaltiamo il canvas prima
+// di disegnare, annullando lo specchiamento solo nel file finale.
+export function captureFrame(videoEl, mirror = false) {
   const canvas = document.createElement('canvas');
   canvas.width = videoEl.videoWidth;
   canvas.height = videoEl.videoHeight;
-  canvas.getContext('2d').drawImage(videoEl, 0, 0);
+  const ctx = canvas.getContext('2d');
+  if (mirror) {
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+  }
+  ctx.drawImage(videoEl, 0, 0);
   return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.9));
 }

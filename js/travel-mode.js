@@ -1,7 +1,7 @@
 import { db } from './firebase-config.js';
 import { uploadToCloudinary } from './cloudinary-config.js';
 import {
-  collection, doc, addDoc, setDoc, getDocs, query, orderBy,
+  collection, doc, addDoc, setDoc, deleteDoc, getDocs, query, orderBy,
 } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
 
 export async function createTrip(coupleId, { name, destination, days, randomNotificationsPaused, createdBy, startDate }) {
@@ -30,6 +30,15 @@ export async function getTripDays(coupleId, tripId) {
 
 export async function updateDayPlan(coupleId, tripId, dayIndex, plan) {
   await setDoc(doc(db, 'couples', coupleId, 'trips', tripId, 'days', String(dayIndex)), { plan }, { merge: true });
+}
+
+// Firestore non elimina in cascata le sottocollection: i documenti "days"
+// vanno cancellati uno a uno prima del viaggio stesso, altrimenti resterebbero
+// orfani (invisibili in UI, ma per sempre nel database).
+export async function deleteTrip(coupleId, tripId) {
+  const daysSnap = await getDocs(collection(db, 'couples', coupleId, 'trips', tripId, 'days'));
+  await Promise.all(daysSnap.docs.map((d) => deleteDoc(d.ref)));
+  await deleteDoc(doc(db, 'couples', coupleId, 'trips', tripId));
 }
 
 export async function uploadDayPhoto(coupleId, tripId, dayIndex, uid, file) {

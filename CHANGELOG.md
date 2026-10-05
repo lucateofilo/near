@@ -4,6 +4,16 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 
 ## 2026-10-05
 
+### Corretto (3)
+- Selfie salvati specchiati: molti browser mobile (es. Chrome su Android) consegnano lo stream della fotocamera frontale già specchiato a livello di driver. Lo scatto veniva disegnato così com'era, quindi il file finale usciva ribaltato rispetto alla realtà. Ora il frame frontale viene riflesso di nuovo in fase di cattura, cosi' il selfie salvato corrisponde a come si è stati fotografati davvero.
+- Etichetta del countdown nel pannello Ricordi: "Prossimo anniversario" → "Prossimo evento" (il countdown copre qualunque evento aggiunto, non solo gli anniversari).
+
+### Aggiunto (4) — eliminazione con conferma
+- Foto, bigliettini, eventi del calendario e viaggi sono ora eliminabili (ciascuno con una richiesta di conferma prima di procedere, nessuna eliminazione è reversibile). Foto e bigliettini solo dal proprio autore; eventi e viaggi da entrambi i partner, essendo condivisi fin dalla creazione.
+- Aggiornate le Firestore Security Rules: `photos` e `notes` permettevano solo creazione, mai eliminazione; ora consentono il delete esclusivamente all'autore del documento. Pubblicato in produzione.
+- Eliminare un viaggio cancella anche tutti i documenti "giorno" nella sua sottocollection, che Firestore non elimina in cascata da solo.
+- L'immagine su Cloudinary non viene cancellata quando si elimina una foto (upload non firmato, nessun segreto lato client per farlo via API): resta un file orfano, scelta coerente con l'architettura "zero backend" del progetto.
+
 ### Aggiunto (3) — pannello "Ricordi"
 - Nuovo pannello laterale (icona a stella in header, scorre da destra) con streak, countdown del prossimo anniversario e la foto di un anno fa — dati da sbirciare, non da gestire, prima erano sepolti in Impostazioni (lo streak) o assenti del tutto (il ricordo). La home resta pulita, le Impostazioni restano la pagina di gestione (form evento, abbinamento), non quella di consultazione.
 - Streak e countdown nel pannello rispettano i toggle già esistenti `streakEnabled`/`calendarEnabled` in Impostazioni, prima presenti solo nella UI ma senza alcun effetto reale.

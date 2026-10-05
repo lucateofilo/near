@@ -49,7 +49,7 @@ service cloud.firestore {
         allow read: if isMember(coupleId);
         allow create: if isMember(coupleId) && request.resource.data.uid == request.auth.uid;
         allow update: if isMember(coupleId); // reazioni dell'altro partner
-        allow delete: if false;
+        allow delete: if isMember(coupleId) && resource.data.uid == request.auth.uid;
       }
 
       match /notes/{noteId} {
@@ -59,7 +59,7 @@ service cloud.firestore {
         allow update: if isMember(coupleId)
           && request.auth.uid != resource.data.uid
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy']);
-        allow delete: if false;
+        allow delete: if isMember(coupleId) && resource.data.uid == request.auth.uid;
       }
 
       match /events/{eventId} {

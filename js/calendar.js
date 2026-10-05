@@ -1,5 +1,7 @@
 import { db } from './firebase-config.js';
-import { collection, addDoc, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
+import {
+  collection, doc, addDoc, deleteDoc, getDocs, query, orderBy,
+} from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
 
 export async function addEvent(coupleId, title, date, recurring) {
   await addDoc(collection(db, 'couples', coupleId, 'events'), { title, date, recurring });
@@ -8,6 +10,10 @@ export async function addEvent(coupleId, title, date, recurring) {
 export async function listEvents(coupleId) {
   const snap = await getDocs(query(collection(db, 'couples', coupleId, 'events'), orderBy('date')));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function deleteEvent(coupleId, eventId) {
+  await deleteDoc(doc(db, 'couples', coupleId, 'events', eventId));
 }
 
 export function daysUntil(dateStr, recurring) {

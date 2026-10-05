@@ -130,8 +130,15 @@ button:active { opacity: 0.8; }
   object-fit: cover; border-radius: 8px; border: 2px solid #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2); cursor: pointer;
 }
-.photo-meta { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
+.photo-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
+.meta-info { display: flex; align-items: center; gap: 8px; }
+.meta-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .status-badge { padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+.delete-btn {
+  background: none; border: none; padding: 2px; margin: 0; width: auto;
+  color: var(--muted); cursor: pointer; display: inline-flex; flex-shrink: 0;
+}
+.delete-btn:hover { color: var(--danger); }
 .status-on_time { background: #E3EEDA; color: var(--sage-dark); }
 .status-late { background: #F3E3D6; color: var(--danger); }
 .reactions-row { display: flex; gap: 8px; }
@@ -139,6 +146,7 @@ button:active { opacity: 0.8; }
 
 .note-card { border-left: 4px solid var(--lavender); }
 .note-meta { font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
+.note-meta.meta-row { align-items: flex-start; }
 
 .toggle-row {
   display: block; background: #fff; border-radius: var(--radius);

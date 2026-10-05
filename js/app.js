@@ -3,19 +3,20 @@ import { auth } from './firebase-config.js';
 import { findMyCouple, generatePairingCode, redeemPairingCode } from './pairing.js';
 import { state, setUser, setCouple, reset } from './state.js';
 import { showView, toast, formatDate } from './ui.js';
-import { uploadPhoto, listPhotos, getPhotosByDate, reactToPhoto, getPendingSlot, photoImages } from './firestore-photos.js';
+import { uploadPhoto, listPhotos, getPhotosByDate, reactToPhoto, deletePhoto, getPendingSlot, photoImages } from './firestore-photos.js';
 import { startCamera, stopCamera, captureFrame } from './camera-capture.js';
 import { romeDateKey, oneYearBeforeKey } from './date-utils.js';
-import { sendNote, listNotes, markNoteRead } from './firestore-notes.js';
+import { sendNote, listNotes, markNoteRead, deleteNote } from './firestore-notes.js';
 import { SETTINGS_DEFS, getSettings, setSetting } from './settings.js';
 import { computeStreak } from './streak.js';
-import { addEvent, listEvents, daysUntil, nextUpcoming } from './calendar.js';
-import { createTrip, listTrips, getTripDays, updateDayPlan, uploadDayPhoto } from './travel-mode.js';
+import { addEvent, listEvents, daysUntil, nextUpcoming, deleteEvent } from './calendar.js';
+import { createTrip, listTrips, getTripDays, updateDayPlan, uploadDayPhoto, deleteTrip } from './travel-mode.js';
 import { SILENT_DURATIONS, activateSilentMode, deactivateSilentMode, isSilentActive } from './silent-mode.js';
 import { enableNotifications } from './fcm-client.js';
 import { getProfile, saveProfileName, uploadAvatar, avatarHtml, renderAvatarInto } from './profile.js';
 
 const REACTION_EMOJIS = ['❤️', '🤍', '😍', '😂', '😮'];
+const TRASH_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';
 
 let currentSettings = null;
 
@@ -156,7 +157,7 @@ async function runCaptureStep(facingMode, label) {
   captureVideo.srcObject = captureStream;
   return new Promise((resolve) => {
     document.getElementById('captureShotBtn').onclick = async () => {
-      const blob = await captureFrame(captureVideo);
+      const blob = await captureFrame(captureVideo, facingMode === 'user');
       stopCamera(captureStream);
       resolve(blob);
     };
@@ -241,8 +242,11 @@ async function renderHome() {
         ${thumb ? `<img class="photo-thumb" src="${thumb}" alt="Selfie" loading="lazy">` : ''}
       </div>
       <div class="photo-meta">
-        <span>${formatDate(p.takenAt?.toDate?.() ?? p.takenAt)}</span>
-        <span class="status-badge status-${p.status}">${p.status === 'on_time' ? 'Puntuale' : 'In ritardo'}</span>
+        <span class="meta-info">
+          <span>${formatDate(p.takenAt?.toDate?.() ?? p.takenAt)}</span>
+          <span class="status-badge status-${p.status}">${p.status === 'on_time' ? 'Puntuale' : 'In ritardo'}</span>
+        </span>
+        ${p.uid === state.user.uid ? `<button class="delete-btn" data-delete-photo="${p.id}" title="Elimina foto">${TRASH_ICON}</button>` : ''}
       </div>
       <div class="reactions-row" data-photo-id="${p.id}">
         ${REACTION_EMOJIS.map((em) => `<button data-emoji="${em}">${em}</button>`).join('')}
@@ -250,6 +254,14 @@ async function renderHome() {
     </div>
   `;
   }).join('') || '<p>Ancora nessuna foto. Aspettate la prossima notifica!</p>';
+
+  wrap.querySelectorAll('[data-delete-photo]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Eliminare questa foto? Non si può annullare.')) return;
+      await deletePhoto(state.coupleId, btn.dataset.deletePhoto);
+      renderHome();
+    });
+  });
 
   // tap sulla miniatura per scambiarla con la foto grande, cosi' si vede
   // integralmente anche quella (nessuna delle due resta "piccola per sempre")
@@ -298,10 +310,21 @@ async function renderNotes() {
     return `
     <div class="note-card">
       <p>${escapeHtml(n.text)}</p>
-      <div class="note-meta">${mine ? 'Tu' : 'Il tuo partner'} · ${formatDate(n.createdAt?.toDate?.() ?? n.createdAt)}${mine && read ? ' · ✓ Letto' : ''}</div>
+      <div class="note-meta meta-row">
+        <span>${mine ? 'Tu' : 'Il tuo partner'} · ${formatDate(n.createdAt?.toDate?.() ?? n.createdAt)}${mine && read ? ' · ✓ Letto' : ''}</span>
+        ${mine ? `<button class="delete-btn" data-delete-note="${n.id}" title="Elimina bigliettino">${TRASH_ICON}</button>` : ''}
+      </div>
     </div>
   `;
   }).join('') || '<p>Nessun bigliettino ancora.</p>';
+
+  wrap.querySelectorAll('[data-delete-note]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Eliminare questo bigliettino? Non si può annullare.')) return;
+      await deleteNote(state.coupleId, btn.dataset.deleteNote);
+      renderNotes();
+    });
+  });
 
   // i bigliettini del partner non ancora letti vengono marcati ora: è l'apertura
   // della vista "Bigliettini" stessa il momento in cui li hai effettivamente visti
@@ -391,10 +414,21 @@ async function renderEvents() {
   const wrap = document.getElementById('eventsList');
   wrap.innerHTML = events.map((ev) => `
     <div class="event-card">
-      <strong>${escapeHtml(ev.title)}</strong>
+      <div class="meta-row">
+        <strong>${escapeHtml(ev.title)}</strong>
+        <button class="delete-btn" data-delete-event="${ev.id}" title="Elimina evento">${TRASH_ICON}</button>
+      </div>
       <p>${daysUntil(ev.date, ev.recurring)} giorni</p>
     </div>
   `).join('') || '<p>Nessun evento ancora.</p>';
+
+  wrap.querySelectorAll('[data-delete-event]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Eliminare questo evento? Non si può annullare.')) return;
+      await deleteEvent(state.coupleId, btn.dataset.deleteEvent);
+      renderEvents();
+    });
+  });
 }
 
 // ---------- Drawer ricordi ----------
@@ -442,8 +476,8 @@ async function renderDrawer() {
   if (currentSettings?.calendarEnabled !== false) {
     const next = nextUpcoming(events);
     eventEl.innerHTML = next
-      ? `<h3>Prossimo anniversario</h3><p>${escapeHtml(next.title)} — ${next.days === 0 ? 'è oggi!' : `in ${next.days} ${next.days === 1 ? 'giorno' : 'giorni'}`}</p>`
-      : '<h3>Prossimo anniversario</h3><p>Aggiungi una data dalle Impostazioni.</p>';
+      ? `<h3>Prossimo evento</h3><p>${escapeHtml(next.title)} — ${next.days === 0 ? 'è oggi!' : `in ${next.days} ${next.days === 1 ? 'giorno' : 'giorni'}`}</p>`
+      : '<h3>Prossimo evento</h3><p>Aggiungi una data dalle Impostazioni.</p>';
   }
 
   memoryEl.classList.remove('hidden');
@@ -536,7 +570,10 @@ async function renderTravel() {
   const trips = await listTrips(state.coupleId);
   wrap.innerHTML = trips.map((t) => `
     <div class="trip-card" data-trip-id="${t.id}">
-      <strong>${escapeHtml(t.name)}</strong>
+      <div class="meta-row">
+        <strong>${escapeHtml(t.name)}</strong>
+        <button class="delete-btn" data-delete-trip="${t.id}" title="Elimina viaggio">${TRASH_ICON}</button>
+      </div>
       <p>${t.days} giorni · dal ${t.startDate}</p>
       <button data-open="${t.id}">Apri</button>
     </div>
@@ -544,6 +581,15 @@ async function renderTravel() {
 
   wrap.querySelectorAll('[data-open]').forEach((btn) => {
     btn.addEventListener('click', () => openTrip(btn.dataset.open));
+  });
+
+  wrap.querySelectorAll('[data-delete-trip]').forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!confirm('Eliminare questo viaggio e tutte le sue giornate? Non si può annullare.')) return;
+      await deleteTrip(state.coupleId, btn.dataset.deleteTrip);
+      renderTravel();
+    });
   });
 }
 

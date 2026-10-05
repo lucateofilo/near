@@ -2,7 +2,7 @@ import { db } from './firebase-config.js';
 import { romeDateKey } from './date-utils.js';
 import { uploadToCloudinary } from './cloudinary-config.js';
 import {
-  collection, doc, getDoc, getDocs, addDoc, updateDoc, query, where, orderBy, limit, Timestamp,
+  collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, Timestamp,
 } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
 
 const LATE_THRESHOLD_MS = 15 * 60 * 1000;
@@ -93,4 +93,11 @@ export async function getPhotosByDate(coupleId, dateKey) {
 
 export async function reactToPhoto(coupleId, photoId, uid, emoji) {
   await updateDoc(doc(db, 'couples', coupleId, 'photos', photoId), { [`reactions.${uid}`]: emoji });
+}
+
+// Elimina solo il documento Firestore: l'immagine resta su Cloudinary (upload
+// non firmato, nessun segreto lato client per cancellarla via API) — scelta
+// coerente col resto del progetto, costo di storage trascurabile.
+export async function deletePhoto(coupleId, photoId) {
+  await deleteDoc(doc(db, 'couples', coupleId, 'photos', photoId));
 }
