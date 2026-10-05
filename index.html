@@ -64,8 +64,11 @@
   </div>
 
   <section id="view-notes" class="view hidden">
-    <h1>Bigliettini</h1>
-    <form id="noteForm" class="note-form">
+    <div class="view-head">
+      <h1>Bigliettini</h1>
+      <button id="addNoteBtn" class="add-btn" type="button" aria-label="Nuovo bigliettino">+</button>
+    </div>
+    <form id="noteForm" class="note-form hidden">
       <textarea id="noteText" placeholder="Scrivi un pensiero carino..." aria-label="Testo del bigliettino" maxlength="500" required></textarea>
       <button type="submit">Invia</button>
     </form>
@@ -73,10 +76,13 @@
   </section>
 
   <section id="view-calendar" class="view hidden">
-    <h1>Calendario</h1>
+    <div class="view-head">
+      <h1>Calendario</h1>
+      <button id="addEventBtn" class="add-btn" type="button" aria-label="Nuovo evento">+</button>
+    </div>
     <p id="calendarUnpaired" class="hidden">Abbinati al tuo partner dalla pagina Account per iniziare a segnare le vostre date importanti.</p>
     <div id="calendarContent" class="hidden">
-      <form id="eventForm" class="event-form">
+      <form id="eventForm" class="event-form hidden">
         <input type="text" id="eventTitle" placeholder="Titolo (es. Anniversario)" aria-label="Titolo dell'evento" required>
         <input type="date" id="eventDate" aria-label="Data dell'evento" required>
         <label><input type="checkbox" id="eventRecurring" checked> Si ripete ogni anno</label>
@@ -87,8 +93,10 @@
   </section>
 
   <section id="view-travel" class="view hidden">
-    <h1>Viaggio</h1>
-    <button id="newTripBtn">+ Nuovo viaggio</button>
+    <div class="view-head">
+      <h1>Viaggio</h1>
+      <button id="newTripBtn" class="add-btn" type="button" aria-label="Nuovo viaggio">+</button>
+    </div>
     <div id="tripsList" class="trips-list"></div>
     <div id="tripDetail" class="trip-detail hidden"></div>
   </section>

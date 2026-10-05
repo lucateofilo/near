@@ -55,6 +55,16 @@ body {
 main#app { max-width: 480px; margin: 0 auto; padding: 16px; }
 
 .view h1 { font-size: 1.4rem; margin: 6px 0 16px; color: var(--sage-dark); text-wrap: pretty; }
+
+.view-head { display: flex; align-items: center; justify-content: space-between; }
+.view-head h1 { margin: 0; }
+.add-btn {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  font-size: 1.6rem; line-height: 1; padding: 0; margin: 0 0 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, transform .2s;
+}
+.add-btn.active { transform: rotate(45deg); background: var(--sage-dark); }
 .view h2 { font-size: 1rem; margin: 18px 0 8px; color: var(--ink); text-wrap: pretty; }
 
 /* Ogni altra pagina (Home, Bigliettini, Viaggio) raggruppa i contenuti in card

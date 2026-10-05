@@ -4,6 +4,10 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 
 ## 2026-10-05
 
+### Rifinito — form di inserimento dietro un "+"
+- Bigliettini, Calendario e Viaggio mostravano il form di inserimento sempre aperto sopra la lista. Ora c'è un bottone "+" in alto a destra (ruota a "×" quando il form è aperto) in ogni pagina, coerente con lo stesso pattern già usato per i viaggi; il form si richiude da solo dopo l'invio.
+- Corretti tre messaggi "Abbinati al tuo partner dalle Impostazioni..." (Home, Bigliettini, Viaggio) rimasti con un riferimento vecchio: Impostazioni non gestisce più l'abbinamento da quando è stata introdotta la pagina Account.
+
 ### Ristrutturato — navigazione a sidebar
 - Sostituita la bottom nav a 4 voci con un'unica sidebar (scorre da sinistra, icona menu in header) che elenca ogni pagina una sotto l'altra: Foto, Bigliettini, Calendario, Viaggio, Ricordi, poi — separate da un divisore — Impostazioni e Account.
 - "Calendario" (prima un form sepolto in fondo a Impostazioni) è ora una pagina propria.

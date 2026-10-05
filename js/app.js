@@ -232,7 +232,7 @@ async function renderHome() {
   if (!state.coupleId) {
     captureBtn.classList.add('hidden');
     partnerCard.classList.add('hidden');
-    wrap.innerHTML = '<p>Abbinati al tuo partner dalle Impostazioni per iniziare a scattare foto insieme.</p>';
+    wrap.innerHTML = '<p>Abbinati al tuo partner dalla pagina Account per iniziare a scattare foto insieme.</p>';
     return;
   }
   captureBtn.classList.remove('hidden');
@@ -310,24 +310,32 @@ async function renderHome() {
 
 // ---------- Bigliettini ----------
 
+document.getElementById('addNoteBtn').addEventListener('click', () => {
+  document.getElementById('noteForm').classList.toggle('hidden');
+  document.getElementById('addNoteBtn').classList.toggle('active');
+});
+
 document.getElementById('noteForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const textarea = document.getElementById('noteText');
   await sendNote(state.coupleId, state.user.uid, textarea.value);
   textarea.value = '';
+  document.getElementById('noteForm').classList.add('hidden');
+  document.getElementById('addNoteBtn').classList.remove('active');
   renderNotes();
 });
 
 async function renderNotes() {
-  const noteForm = document.getElementById('noteForm');
+  const addBtn = document.getElementById('addNoteBtn');
   const wrap = document.getElementById('notesList');
 
   if (!state.coupleId) {
-    noteForm.classList.add('hidden');
-    wrap.innerHTML = '<p>Abbinati al tuo partner dalle Impostazioni per iniziare a scambiarvi bigliettini.</p>';
+    addBtn.classList.add('hidden');
+    document.getElementById('noteForm').classList.add('hidden');
+    wrap.innerHTML = '<p>Abbinati al tuo partner dalla pagina Account per iniziare a scambiarvi bigliettini.</p>';
     return;
   }
-  noteForm.classList.remove('hidden');
+  addBtn.classList.remove('hidden');
 
   const notes = await listNotes(state.coupleId);
   wrap.innerHTML = notes.map((n) => {
@@ -432,16 +440,24 @@ async function renderAccount() {
 async function renderCalendar() {
   const unpaired = document.getElementById('calendarUnpaired');
   const content = document.getElementById('calendarContent');
+  const addBtn = document.getElementById('addEventBtn');
 
   if (!state.coupleId) {
+    addBtn.classList.add('hidden');
     unpaired.classList.remove('hidden');
     content.classList.add('hidden');
     return;
   }
+  addBtn.classList.remove('hidden');
   unpaired.classList.add('hidden');
   content.classList.remove('hidden');
   renderEvents();
 }
+
+document.getElementById('addEventBtn').addEventListener('click', () => {
+  document.getElementById('eventForm').classList.toggle('hidden');
+  document.getElementById('addEventBtn').classList.toggle('active');
+});
 
 document.getElementById('eventForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -452,6 +468,8 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
   await addEvent(state.coupleId, title, date, recurring);
   document.getElementById('eventForm').reset();
   document.getElementById('eventRecurring').checked = true;
+  document.getElementById('eventForm').classList.add('hidden');
+  document.getElementById('addEventBtn').classList.remove('active');
   renderEvents();
 });
 
@@ -553,7 +571,17 @@ document.getElementById('quietModeBtn').addEventListener('click', async () => {
 
 // ---------- Viaggio ----------
 
-document.getElementById('newTripBtn').addEventListener('click', renderNewTripForm);
+document.getElementById('newTripBtn').addEventListener('click', () => {
+  renderNewTripForm();
+  document.getElementById('newTripBtn').classList.add('active');
+});
+
+function closeNewTripForm() {
+  const detail = document.getElementById('tripDetail');
+  detail.classList.add('hidden');
+  detail.innerHTML = '';
+  document.getElementById('newTripBtn').classList.remove('active');
+}
 
 function renderNewTripForm() {
   const detail = document.getElementById('tripDetail');
@@ -569,10 +597,7 @@ function renderNewTripForm() {
       <button type="button" id="tripCancelBtn" class="btn-secondary">Annulla</button>
     </form>
   `;
-  document.getElementById('tripCancelBtn').addEventListener('click', () => {
-    detail.classList.add('hidden');
-    detail.innerHTML = '';
-  });
+  document.getElementById('tripCancelBtn').addEventListener('click', closeNewTripForm);
   document.getElementById('tripForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('tripName').value.trim();
@@ -582,8 +607,7 @@ function renderNewTripForm() {
     const tripId = await createTrip(state.coupleId, {
       name, destination: name, days, randomNotificationsPaused, startDate, createdBy: state.user.uid,
     });
-    detail.classList.add('hidden');
-    detail.innerHTML = '';
+    closeNewTripForm();
     renderTravel();
     openTrip(tripId);
   });
@@ -595,7 +619,7 @@ async function renderTravel() {
 
   if (!state.coupleId) {
     newTripBtn.classList.add('hidden');
-    wrap.innerHTML = '<p>Abbinati al tuo partner dalle Impostazioni per pianificare un viaggio insieme.</p>';
+    wrap.innerHTML = '<p>Abbinati al tuo partner dalla pagina Account per pianificare un viaggio insieme.</p>';
     return;
   }
   newTripBtn.classList.remove('hidden');
