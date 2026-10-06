@@ -183,7 +183,7 @@ async function runCaptureStep(facingMode, label) {
   captureVideo.srcObject = captureStream;
   return new Promise((resolve) => {
     document.getElementById('captureShotBtn').onclick = async () => {
-      const blob = await captureFrame(captureVideo, facingMode === 'user');
+      const blob = await captureFrame(captureVideo);
       stopCamera(captureStream);
       resolve(blob);
     };

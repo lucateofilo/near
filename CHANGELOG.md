@@ -2,6 +2,12 @@
 
 Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## 2026-10-06
+
+### Corretto — scatto doppio foto (back/front)
+- `startCamera` chiedeva `facingMode` come preferenza "ideale", non vincolante: se lo stream della fotocamera posteriore non si liberava abbastanza in fretta, il browser poteva continuare silenziosamente a consegnare quella invece della frontale per lo scatto "selfie", risultando in due foto della stessa camera. Ora si richiede `facingMode: { exact: ... }`, che fallisce in modo esplicito se la camera richiesta non è disponibile invece di sostituirla silenziosamente.
+- Rimosso un flip speculare applicato allo scatto frontale per "correggere" uno specchiamento che in realtà `getUserMedia` non introduce mai sullo stream reale (è un effetto solo CSS sulla preview, qui non usato): il selfie finale usciva specchiato rispetto a quanto visto in anteprima. Ora lo scatto salva esattamente il frame catturato.
+
 ## 2026-10-05
 
 ### Corretto — etichette visibili sui campi dei form
