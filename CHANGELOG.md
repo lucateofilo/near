@@ -4,6 +4,9 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 
 ## 2026-10-06
 
+### Corretto — cache del service worker non invalidata dall'ultimo fix CSS
+- `sw.js` cachea `css/style.css` con cache-first: senza incrementare `CACHE_NAME` a ogni modifica dello shell, chi ha già la PWA installata continua a vedere la versione vecchia. Il fix CSS per lo specchiamento selfie (vedi sotto) non bumpava la versione — portata da `v7` a `v8`. Aggiunta nota in README perché non ricapiti.
+
 ### Corretto — notifiche in ritardo di ore invece che ogni 5 minuti
 - Il trigger `schedule:` nativo di GitHub Actions non garantisce la cadenza impostata (`*/5 * * * *`): sui log si vedevano esecuzioni reali distanziate di 4-6 ore invece che 5 minuti, soprattutto su repo pubblici a bassa attività. Risultato: le notifiche random della giornata arrivavano tutte insieme in un'unica raffica quando il cron finalmente girava, poi silenzio per ore.
 - Il workflow `notify-scheduler.yml` esponeva già un trigger `workflow_dispatch` manuale: aggiunto un cronjob esterno gratuito su cron-job.org che lo chiama via API ogni 5 minuti con un token GitHub dedicato (scope limitato ad Actions sul solo repo `near`), molto più affidabile dello `schedule:` nativo. Nessuna modifica al codice del repo, solo configurazione esterna. Il trigger `schedule:` è rimasto nel file come backup ridondante ma innocuo.

@@ -23,7 +23,7 @@ firebase.messaging().onBackgroundMessage((payload) => {
   self.registration.showNotification(title, options);
 });
 
-const CACHE_NAME = 'near-shell-v7';
+const CACHE_NAME = 'near-shell-v8';
 const SHELL_FILES = [
   './',
   './index.html',
