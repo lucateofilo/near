@@ -4,6 +4,9 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 
 ## 2026-10-06
 
+### Corretto — upload foto sempre sostituito dal primo mai caricato
+- `uploadToCloudinary` inviava il file senza nome esplicito: un Blob (come quelli prodotti dalla cattura foto) viene mandato dal browser col nome letterale `blob`. Il preset `ml_default` ha `unique_filename` e `overwrite` disattivati su Cloudinary, quindi ogni upload successivo al primo con lo stesso nome/cartella veniva ignorato silenziosamente e Cloudinary restituiva sempre il primissimo file caricato — da qui il "si vede sempre la stessa foto" nonostante Firestore registrasse correttamente data/ora di ogni scatto. Back e front di uno stesso scatto collidevano anche tra loro (stessa cartella, stesso nome). Ora ogni upload riceve un nome univoco generato lato client, a prescindere dal nome originale del file.
+
 ### Corretto — scatto doppio foto (back/front)
 - `startCamera` chiedeva `facingMode` come preferenza "ideale", non vincolante: se lo stream della fotocamera posteriore non si liberava abbastanza in fretta, il browser poteva continuare silenziosamente a consegnare quella invece della frontale per lo scatto "selfie", risultando in due foto della stessa camera. Ora si richiede `facingMode: { exact: ... }`, che fallisce in modo esplicito se la camera richiesta non è disponibile invece di sostituirla silenziosamente.
 - La fotocamera frontale salvava lo scatto specchiato ma mostrava l'anteprima live non specchiata: incoerenza tra ciò che si vede inquadrando e il file salvato. Ora l'anteprima frontale è specchiata via CSS (classe `.mirrored` su `#captureVideo`) esattamente come lo scatto finale, comportamento coerente con una fotocamera normale.

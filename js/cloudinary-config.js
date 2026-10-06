@@ -6,7 +6,13 @@ export const CLOUDINARY_UPLOAD_PRESET = 'ml_default';
 
 export async function uploadToCloudinary(file, folder) {
   const formData = new FormData();
-  formData.append('file', file);
+  // Col preset ml_default (unique_filename/overwrite disattivati su Cloudinary)
+  // un nome file duplicato nella stessa folder fa sì che Cloudinary ignori
+  // silenziosamente il nuovo upload e restituisca sempre il primo file mai
+  // caricato con quel nome — un Blob senza nome diventa sempre "blob", e anche
+  // file reali possono collidere (es. "IMG_0001.jpg" da entrambi i telefoni).
+  // Nome sempre generato qui, mai lasciato al nome originale del file.
+  formData.append('file', file, `${crypto.randomUUID()}.jpg`);
   formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
   formData.append('folder', folder);
 
