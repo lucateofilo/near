@@ -2,7 +2,7 @@
   "name": "near-notify-scheduler",
   "private": true,
   "type": "module",
-  "description": "Script Node eseguito da GitHub Actions per generare e inviare le notifiche push di Near. Il frontend non usa npm/node_modules.",
+  "description": "Script Node eseguito da GitHub Actions per generare e inviare le notifiche push di Nearby. Il frontend non usa npm/node_modules.",
   "dependencies": {
     "firebase-admin": "^12.6.0"
   }

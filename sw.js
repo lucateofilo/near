@@ -15,22 +15,25 @@ firebase.initializeApp({
 });
 
 firebase.messaging().onBackgroundMessage((payload) => {
-  const title = payload.notification?.title || 'Near';
+  const title = payload.notification?.title || 'Nearby';
   const options = {
     body: payload.notification?.body || '',
     icon: 'icons/icon-192.png',
+    badge: 'icons/icon-notification.png',
   };
   self.registration.showNotification(title, options);
 });
 
-const CACHE_NAME = 'near-shell-v8';
+const CACHE_NAME = 'near-shell-v9';
 const SHELL_FILES = [
   './',
   './index.html',
   './css/style.css',
   './manifest.json',
+  './icons/icon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './icons/icon-notification.png',
 ];
 
 self.addEventListener('install', (event) => {

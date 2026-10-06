@@ -4,6 +4,17 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 
 ## 2026-10-06
 
+### Aggiunto — notifiche personalizzate sul nome del partner, biglietto mostrato per intero
+- Le push di "foto pubblicata" e "nuovo bigliettino" mostravano sempre testo generico ("Il tuo partner ha pubblicato una foto!", "Hai un nuovo bigliettino!"). `scripts/notify-scheduler.mjs` ora legge il nome profilo (`users/{uid}`) di chi ha pubblicato/scritto e lo usa nel testo della notifica; per i bigliettini il push mostra direttamente il contenuto del messaggio invece di un placeholder.
+- Stesso trattamento lato UI: "Il tuo partner" sostituito col nome reale nella lista bigliettini e nello stato di abbinamento in Account (entrambi via `getProfile`, fallback al testo generico se il partner non ha ancora impostato un nome).
+
+### Rinominato — Near → Nearby (solo nome visualizzato)
+- Cambiato il nome mostrato in `manifest.json`, titolo pagina, header e drawer, titolo delle notifiche push. Repo GitHub, URL pubblico (`lucateofilo.github.io/near/`) e progetto Firebase (`near-f4f99`) restano invariati per scelta esplicita, nessun rischio di rompere link già condivisi.
+
+### Aggiunto — nuova icona app e icona dedicata per le notifiche
+- Sostituita l'icona placeholder (cerchio lavanda con lettera "N") con due cerchi sovrapposti salvia/lavanda, sorgente in `icons/icon.svg` (SVG, referenziato anche nel manifest) con PNG derivati per compatibilità (`icon-192.png`, `icon-512.png`).
+- Aggiunta `icons/icon-notification.png` (silhouette bianca su trasparente) usata come `badge` nel service worker: su Android la vecchia icona a colori veniva comunque forzata a monocromo dal sistema nella status bar, risultando illeggibile — ora c'è un asset pensato apposta per quello. Cache dello shell bump da `v8` a `v9` per invalidare le versioni già installate.
+
 ### Corretto — cache del service worker non invalidata dall'ultimo fix CSS
 - `sw.js` cachea `css/style.css` con cache-first: senza incrementare `CACHE_NAME` a ogni modifica dello shell, chi ha già la PWA installata continua a vedere la versione vecchia. Il fix CSS per lo specchiamento selfie (vedi sotto) non bumpava la versione — portata da `v7` a `v8`. Aggiunta nota in README perché non ricapiti.
 

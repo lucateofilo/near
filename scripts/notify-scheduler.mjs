@@ -54,11 +54,13 @@ async function ensureTodaySchedule(coupleId, dateKey) {
 
 async function getCoupleContext(coupleDoc) {
   const members = coupleDoc.data().members;
-  const settingsSnaps = await Promise.all(
-    members.map((uid) => db.doc(`couples/${coupleDoc.id}/settings/${uid}`).get())
-  );
+  const [settingsSnaps, userSnaps] = await Promise.all([
+    Promise.all(members.map((uid) => db.doc(`couples/${coupleDoc.id}/settings/${uid}`).get())),
+    Promise.all(members.map((uid) => db.doc(`users/${uid}`).get())),
+  ]);
   const settings = Object.fromEntries(members.map((uid, i) => [uid, settingsSnaps[i].data() || {}]));
-  return { members, settings };
+  const names = Object.fromEntries(members.map((uid, i) => [uid, userSnaps[i].data()?.name || 'Il tuo partner']));
+  return { members, settings, names };
 }
 
 function isSilenced(settings) {
@@ -133,7 +135,7 @@ async function processRandomSlots(coupleId, members, settings, dateKey) {
 
     if (sent) {
       await sendPush(coupleId, members, settings, {
-        title: 'Near',
+        title: 'Nearby',
         body: 'È il momento di scattare una foto insieme, proprio ora!',
         data: { type: 'photo_prompt' },
       });
@@ -141,13 +143,13 @@ async function processRandomSlots(coupleId, members, settings, dateKey) {
   }
 }
 
-async function processPendingItems(coupleId, members, settings, collectionName, buildNotification) {
+async function processPendingItems(coupleId, members, settings, names, collectionName, buildNotification) {
   const snap = await db.collection(`couples/${coupleId}/${collectionName}`).where('notifiedToPartner', '==', false).get();
   for (const doc of snap.docs) {
     const item = doc.data();
     const partnerUid = members.find((uid) => uid !== item.uid);
     if (partnerUid && !isSilenced(settings[partnerUid])) {
-      await sendPush(coupleId, [partnerUid], settings, buildNotification(doc.id, item));
+      await sendPush(coupleId, [partnerUid], settings, buildNotification(doc.id, item, names[item.uid]));
     }
     await doc.ref.update({ notifiedToPartner: true });
   }
@@ -178,16 +180,16 @@ async function run() {
     const dateKey = romeDateKey();
 
     await ensureTodaySchedule(coupleId, dateKey);
-    const { members, settings } = await getCoupleContext(coupleDoc);
+    const { members, settings, names } = await getCoupleContext(coupleDoc);
 
     await processRandomSlots(coupleId, members, settings, dateKey);
 
-    await processPendingItems(coupleId, members, settings, 'photos', (id) => ({
-      title: 'Near', body: 'Il tuo partner ha pubblicato una foto!', data: { type: 'photo_published', photoId: id },
+    await processPendingItems(coupleId, members, settings, names, 'photos', (id, item, name) => ({
+      title: 'Nearby', body: `${name} ha pubblicato una foto!`, data: { type: 'photo_published', photoId: id },
     }));
 
-    await processPendingItems(coupleId, members, settings, 'notes', (id) => ({
-      title: 'Near', body: 'Hai un nuovo bigliettino!', data: { type: 'note_received', noteId: id },
+    await processPendingItems(coupleId, members, settings, names, 'notes', (id, item, name) => ({
+      title: 'Nearby', body: `${name}: ${item.text}`, data: { type: 'note_received', noteId: id },
     }));
   }
 }

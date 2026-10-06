@@ -338,7 +338,8 @@ async function renderNotes() {
   }
   addBtn.classList.remove('hidden');
 
-  const notes = await listNotes(state.coupleId);
+  const [notes, partnerProfile] = await Promise.all([listNotes(state.coupleId), getProfile(state.partnerUid)]);
+  const partnerName = partnerProfile.name || 'Il tuo partner';
   wrap.innerHTML = notes.map((n) => {
     const mine = n.uid === state.user.uid;
     const read = !!n.readBy?.[state.partnerUid];
@@ -346,7 +347,7 @@ async function renderNotes() {
     <div class="note-card">
       <p>${escapeHtml(n.text)}</p>
       <div class="note-meta meta-row">
-        <span>${mine ? 'Tu' : 'Il tuo partner'} · ${formatDate(n.createdAt?.toDate?.() ?? n.createdAt)}${mine && read ? ' · ✓ Letto' : ''}</span>
+        <span>${mine ? 'Tu' : escapeHtml(partnerName)} · ${formatDate(n.createdAt?.toDate?.() ?? n.createdAt)}${mine && read ? ' · ✓ Letto' : ''}</span>
         ${mine ? `<button class="delete-btn" data-delete-note="${n.id}" title="Elimina bigliettino">${TRASH_ICON}</button>` : ''}
       </div>
     </div>
@@ -434,6 +435,10 @@ async function renderAccount() {
 
   pairedStatus.classList.toggle('hidden', !state.coupleId);
   pairingForms.classList.toggle('hidden', !!state.coupleId);
+  if (state.coupleId) {
+    const partnerProfile = await getProfile(state.partnerUid);
+    pairedStatus.textContent = `✓ Sei abbinato a ${partnerProfile.name || 'un partner'}.`;
+  }
 }
 
 // ---------- Calendario ----------

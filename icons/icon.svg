@@ -1,0 +1,7 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#F7F3EA"/>
+  <circle id="c1" cx="205" cy="256" r="138" fill="#9CAF88"/>
+  <circle id="c2" cx="307" cy="256" r="138" fill="#C8B6E2"/>
+  <clipPath id="clip1"><use href="#c1"/></clipPath>
+  <use href="#c2" clip-path="url(#clip1)" fill="#B2B2B5"/>
+</svg>
