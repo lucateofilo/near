@@ -4,6 +4,10 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 
 ## 2026-10-06
 
+### Corretto — notifiche in ritardo di ore invece che ogni 5 minuti
+- Il trigger `schedule:` nativo di GitHub Actions non garantisce la cadenza impostata (`*/5 * * * *`): sui log si vedevano esecuzioni reali distanziate di 4-6 ore invece che 5 minuti, soprattutto su repo pubblici a bassa attività. Risultato: le notifiche random della giornata arrivavano tutte insieme in un'unica raffica quando il cron finalmente girava, poi silenzio per ore.
+- Il workflow `notify-scheduler.yml` esponeva già un trigger `workflow_dispatch` manuale: aggiunto un cronjob esterno gratuito su cron-job.org che lo chiama via API ogni 5 minuti con un token GitHub dedicato (scope limitato ad Actions sul solo repo `near`), molto più affidabile dello `schedule:` nativo. Nessuna modifica al codice del repo, solo configurazione esterna. Il trigger `schedule:` è rimasto nel file come backup ridondante ma innocuo.
+
 ### Corretto — upload foto sempre sostituito dal primo mai caricato
 - `uploadToCloudinary` inviava il file senza nome esplicito: un Blob (come quelli prodotti dalla cattura foto) viene mandato dal browser col nome letterale `blob`. Il preset `ml_default` ha `unique_filename` e `overwrite` disattivati su Cloudinary, quindi ogni upload successivo al primo con lo stesso nome/cartella veniva ignorato silenziosamente e Cloudinary restituiva sempre il primissimo file caricato — da qui il "si vede sempre la stessa foto" nonostante Firestore registrasse correttamente data/ora di ogni scatto. Back e front di uno stesso scatto collidevano anche tra loro (stessa cartella, stesso nome). Ora ogni upload riceve un nome univoco generato lato client, a prescindere dal nome originale del file.
 
