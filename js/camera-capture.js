@@ -13,14 +13,19 @@ export function stopCamera(stream) {
   stream?.getTracks().forEach((t) => t.stop());
 }
 
-// getUserMedia non consegna mai lo stream già specchiato (quello è solo un
-// effetto CSS sulla preview, qui non applicato): lo scatto va salvato così
-// com'è, senza flip.
-export function captureFrame(videoEl) {
+// getUserMedia non consegna mai lo stream già specchiato: il flip va fatto
+// esplicitamente qui, e deve combaciare con quello CSS applicato alla preview
+// (classe .mirrored) perché lo scatto salvato corrisponda a ciò che si vede
+// mentre si inquadra — come una normale fotocamera frontale.
+export function captureFrame(videoEl, mirror = false) {
   const canvas = document.createElement('canvas');
   canvas.width = videoEl.videoWidth;
   canvas.height = videoEl.videoHeight;
   const ctx = canvas.getContext('2d');
+  if (mirror) {
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+  }
   ctx.drawImage(videoEl, 0, 0);
   return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.9));
 }

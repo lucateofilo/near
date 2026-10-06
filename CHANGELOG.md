@@ -6,7 +6,7 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 
 ### Corretto — scatto doppio foto (back/front)
 - `startCamera` chiedeva `facingMode` come preferenza "ideale", non vincolante: se lo stream della fotocamera posteriore non si liberava abbastanza in fretta, il browser poteva continuare silenziosamente a consegnare quella invece della frontale per lo scatto "selfie", risultando in due foto della stessa camera. Ora si richiede `facingMode: { exact: ... }`, che fallisce in modo esplicito se la camera richiesta non è disponibile invece di sostituirla silenziosamente.
-- Rimosso un flip speculare applicato allo scatto frontale per "correggere" uno specchiamento che in realtà `getUserMedia` non introduce mai sullo stream reale (è un effetto solo CSS sulla preview, qui non usato): il selfie finale usciva specchiato rispetto a quanto visto in anteprima. Ora lo scatto salva esattamente il frame catturato.
+- La fotocamera frontale salvava lo scatto specchiato ma mostrava l'anteprima live non specchiata: incoerenza tra ciò che si vede inquadrando e il file salvato. Ora l'anteprima frontale è specchiata via CSS (classe `.mirrored` su `#captureVideo`) esattamente come lo scatto finale, comportamento coerente con una fotocamera normale.
 
 ## 2026-10-05
 

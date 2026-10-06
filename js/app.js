@@ -181,9 +181,10 @@ async function runCaptureStep(facingMode, label) {
   captureStepLabel.textContent = label;
   captureStream = await startCamera(facingMode);
   captureVideo.srcObject = captureStream;
+  captureVideo.classList.toggle('mirrored', facingMode === 'user');
   return new Promise((resolve) => {
     document.getElementById('captureShotBtn').onclick = async () => {
-      const blob = await captureFrame(captureVideo);
+      const blob = await captureFrame(captureVideo, facingMode === 'user');
       stopCamera(captureStream);
       resolve(blob);
     };
