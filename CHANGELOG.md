@@ -2,6 +2,14 @@
 
 Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## 2026-10-09
+
+### Aggiunto — notifiche push linkate alla pagina giusta
+- Tap su una notifica portava sempre alla home, ignorando `data.type`/`data.noteId` già presenti nel payload. `sw.js` ora passa `data: payload.data` a `showNotification` e un listener `notificationclick` apre (o porta in foreground, via `postMessage` se un tab è già aperto) la view giusta: "Bigliettini" per `note_received`, home per `photo_prompt`/`photo_published`. `app.js` espone `goToView` (estratta dal click sulla sidebar) e legge `?view=` dall'URL al bootstrap.
+
+### Corretto — notifiche push duplicate identiche
+- `notify-scheduler.yml` aveva sia il trigger `schedule:` nativo che il cron esterno su cron-job.org, entrambi ogni 5 minuti e senza alcun lock: quando le due esecuzioni si sovrapponevano, `processPendingItems` in `notify-scheduler.mjs` leggeva `notifiedToPartner == false` due volte prima che una scrittura lo marcasse `true`, inviando lo stesso push due volte (a differenza degli slot random, già protetti da transazione). Aggiunto un `concurrency` group al workflow (stesso pattern già usato in `deploy.yml`) che serializza le esecuzioni invece di farle sovrapporre: nessuna modifica allo script, il fix è solo nel trigger.
+
 ## 2026-10-06
 
 ### Aggiunto — notifiche personalizzate sul nome del partner, biglietto mostrato per intero

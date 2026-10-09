@@ -20,8 +20,28 @@ firebase.messaging().onBackgroundMessage((payload) => {
     body: payload.notification?.body || '',
     icon: 'icons/icon-192.png',
     badge: 'icons/icon-notification.png',
+    data: payload.data,
   };
   self.registration.showNotification(title, options);
+});
+
+// Tap sulla notifica: se l'app è già aperta in un tab, le manda la view giusta
+// via postMessage invece di ricaricarla; altrimenti apre una finestra nuova
+// con ?view= nell'URL, letto da app.js al bootstrap.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const view = event.notification.data?.type === 'note_received' ? 'notes' : 'home';
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      const client = list.find((c) => c.url.startsWith(self.registration.scope));
+      if (client) {
+        client.postMessage({ type: 'navigate', view });
+        return client.focus();
+      }
+      return self.clients.openWindow(`${self.registration.scope}?view=${view}`);
+    })
+  );
 });
 
 const CACHE_NAME = 'near-shell-v9';

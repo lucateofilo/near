@@ -149,21 +149,26 @@ document.getElementById('menuBtn').addEventListener('click', openNav);
 document.getElementById('closeNavBtn').addEventListener('click', closeNav);
 document.getElementById('navBackdrop').addEventListener('click', closeNav);
 
+async function goToView(view) {
+  document.querySelectorAll('.nav-item').forEach((b) => b.classList.toggle('active', b.dataset.view === view));
+  closeNav();
+
+  if (!state.coupleId) {
+    const couple = await findMyCouple(state.user.uid);
+    if (couple) setCouple(couple.coupleId, couple.members);
+  }
+
+  showView(view);
+  VIEW_RENDERERS[view]();
+}
+
 document.querySelectorAll('.nav-item').forEach((btn) => {
-  btn.addEventListener('click', async () => {
-    document.querySelectorAll('.nav-item').forEach((b) => b.classList.remove('active'));
-    btn.classList.add('active');
-    const view = btn.dataset.view;
-    closeNav();
+  btn.addEventListener('click', () => goToView(btn.dataset.view));
+});
 
-    if (!state.coupleId) {
-      const couple = await findMyCouple(state.user.uid);
-      if (couple) setCouple(couple.coupleId, couple.members);
-    }
-
-    showView(view);
-    VIEW_RENDERERS[view]();
-  });
+// Tap su una notifica con l'app già aperta: il SW manda qui la view di destinazione.
+navigator.serviceWorker?.addEventListener('message', (event) => {
+  if (event.data?.type === 'navigate') goToView(event.data.view);
 });
 
 // ---------- Home / Foto ----------
@@ -712,10 +717,11 @@ async function enterApp() {
   }
   updateQuietFabVisibility();
 
-  document.querySelectorAll('.nav-item').forEach((b) => b.classList.remove('active'));
-  document.querySelector('.nav-item[data-view="home"]').classList.add('active');
-  showView('home');
-  renderHome();
+  // Apertura da notifica (sw.js ha aggiunto ?view=... all'URL): atterra lì
+  // invece che sulla home di default.
+  const requestedView = new URLSearchParams(location.search).get('view');
+  history.replaceState(null, '', location.pathname);
+  await goToView(VIEW_RENDERERS[requestedView] ? requestedView : 'home');
 }
 
 let firstAuthCheckDone = false;

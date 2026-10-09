@@ -5,6 +5,13 @@ on:
     - cron: '*/5 * * * *'
   workflow_dispatch: {}
 
+# schedule: nativo + cron esterno su cron-job.org possono sovrapporsi: senza
+# questo lock due esecuzioni concorrenti leggevano entrambe notifiedToPartner
+# == false prima che una delle due scrivesse true, inviando il push due volte.
+concurrency:
+  group: notify-scheduler
+  cancel-in-progress: false
+
 jobs:
   notify:
     runs-on: ubuntu-latest
