@@ -155,6 +155,32 @@ async function processPendingItems(coupleId, members, settings, names, collectio
   }
 }
 
+// Le reazioni vivono in una mappa (reactions.{uid}) sulla foto, non in una
+// collection a parte: per una coppia (2 membri) chi reagisce e' sempre "l'altro
+// membro" rispetto al proprietario della foto, quindi non serve salvare chi ha
+// reagito a parte per sapere a chi notificare cosa.
+async function processReactionNotifications(coupleId, members, settings, names) {
+  const snap = await db.collection(`couples/${coupleId}/photos`).where('reactionNotifiedToPartner', '==', false).get();
+  for (const doc of snap.docs) {
+    const sent = await db.runTransaction(async (tx) => {
+      const fresh = await tx.get(doc.ref);
+      if (fresh.data().reactionNotifiedToPartner !== false) return false;
+      tx.update(doc.ref, { reactionNotifiedToPartner: true });
+      return true;
+    });
+    if (!sent) continue;
+
+    const item = doc.data();
+    const reactorUid = members.find((uid) => uid !== item.uid);
+    const emoji = item.reactions?.[reactorUid];
+    if (!emoji || isSilenced(settings[item.uid])) continue;
+    await sendPush(coupleId, [item.uid], settings, {
+      title: 'Nearby', body: `${names[reactorUid]} ha reagito ${emoji} alla tua foto!`,
+      data: { type: 'reaction_received', photoId: doc.id },
+    });
+  }
+}
+
 async function cleanupExpiredPairingCodes() {
   // ponytail: fetch dell'intera collection e filtro in JS invece di una query
   // composta (used==false + createdAt<cutoff), che richiederebbe un indice
@@ -191,6 +217,8 @@ async function run() {
     await processPendingItems(coupleId, members, settings, names, 'notes', (id, item, name) => ({
       title: 'Nearby', body: `${name}: ${item.text}`, data: { type: 'note_received', noteId: id },
     }));
+
+    await processReactionNotifications(coupleId, members, settings, names);
   }
 }
 

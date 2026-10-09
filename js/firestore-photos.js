@@ -91,8 +91,13 @@ export async function getPhotosByDate(coupleId, dateKey) {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
-export async function reactToPhoto(coupleId, photoId, uid, emoji) {
-  await updateDoc(doc(db, 'couples', coupleId, 'photos', photoId), { [`reactions.${uid}`]: emoji });
+// reactionNotifiedToPartner si resetta solo quando a reagire e' il partner
+// (non il proprietario sulla sua stessa foto): e' il flag che notify-scheduler.mjs
+// controlla per inviare il push "ha reagito alla tua foto" una sola volta.
+export async function reactToPhoto(coupleId, photoId, uid, emoji, ownerUid) {
+  const updates = { [`reactions.${uid}`]: emoji };
+  if (uid !== ownerUid) updates.reactionNotifiedToPartner = false;
+  await updateDoc(doc(db, 'couples', coupleId, 'photos', photoId), updates);
 }
 
 // Elimina solo il documento Firestore: l'immagine resta su Cloudinary (upload

@@ -44,7 +44,7 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-const CACHE_NAME = 'near-shell-v9';
+const CACHE_NAME = 'near-shell-v10';
 const SHELL_FILES = [
   './',
   './index.html',

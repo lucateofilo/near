@@ -206,8 +206,13 @@ button.delete-btn:hover { background: none; color: var(--danger); }
 .status-late { background: #F3E3D6; color: var(--danger); }
 .reactions-row { display: flex; gap: 8px; }
 .reactions-row button { width: auto; background: var(--cream); color: var(--ink); padding: 6px 10px; font-size: 1.1rem; margin-bottom: 0; }
+.reactions-row button.active { background: var(--sage-dark); color: #fff; }
 @media (hover: hover) {
   .reactions-row button:hover { background: #ddd6c9; }
+}
+.reactions-badge {
+  position: absolute; bottom: 10px; right: 10px; display: flex; gap: 2px;
+  background: rgba(255,255,255,0.9); border-radius: 20px; padding: 4px 8px; font-size: 1rem;
 }
 
 .note-card { border-left: 4px solid var(--lavender); }
@@ -316,6 +321,13 @@ button.delete-btn:hover { background: none; color: var(--danger); }
   position: absolute; top: calc(20px + env(safe-area-inset-top)); right: 20px;
   width: auto; background: rgba(0,0,0,0.4); color: #fff; padding: 8px 14px; margin: 0;
 }
+.capture-flash-btn {
+  position: absolute; top: calc(20px + env(safe-area-inset-top)); left: 20px;
+  width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.4); color: #fff;
+  padding: 0; margin: 0; display: flex; align-items: center; justify-content: center;
+}
+.capture-flash-btn.active { background: var(--lavender); color: #000; }
+.capture-zoom-range { width: 70%; max-width: 240px; margin: 0; }
 
 /* Sidebar di navigazione: scorre da sinistra sopra tutto il resto ed elenca
    ogni pagina una sotto l'altra (Foto, Bigliettini, Calendario, Viaggio,

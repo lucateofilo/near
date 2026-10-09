@@ -13,6 +13,27 @@ export function stopCamera(stream) {
   stream?.getTracks().forEach((t) => t.stop());
 }
 
+// Zoom e torcia sono constraint non standard (MediaTrackCapabilities), supportate
+// solo su alcuni browser/device (perlopiù Chrome Android, fotocamera posteriore):
+// niente libreria, solo applyConstraints col fallback "non disponibile" lasciato
+// al chiamante, che nasconde il controllo quando la capability manca.
+export function getZoomCapability(stream) {
+  const caps = stream.getVideoTracks()[0]?.getCapabilities?.();
+  return caps?.zoom ? { min: caps.zoom.min, max: caps.zoom.max, step: caps.zoom.step || 0.1 } : null;
+}
+
+export function setZoom(stream, value) {
+  return stream.getVideoTracks()[0].applyConstraints({ advanced: [{ zoom: Number(value) }] });
+}
+
+export function hasTorch(stream) {
+  return !!stream.getVideoTracks()[0]?.getCapabilities?.()?.torch;
+}
+
+export function setTorch(stream, on) {
+  return stream.getVideoTracks()[0].applyConstraints({ advanced: [{ torch: on }] });
+}
+
 // getUserMedia non consegna mai lo stream già specchiato: il flip va fatto
 // esplicitamente qui, e deve combaciare con quello CSS applicato alla preview
 // (classe .mirrored) perché lo scatto salvato corrisponda a ciò che si vede

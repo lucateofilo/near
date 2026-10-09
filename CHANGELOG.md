@@ -4,6 +4,12 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 
 ## 2026-10-09
 
+### Aggiunto — zoom e flash nello scatto foto
+- `camera-capture.js` espone `getZoomCapability`/`setZoom` e `hasTorch`/`setTorch` via `track.applyConstraints` (nessuna libreria, è nativo di `MediaStreamTrack`). L'overlay di scatto mostra uno slider zoom e un bottone flash solo se il browser/device li supporta (perlopiù Chrome Android, fotocamera posteriore) — su iOS Safari non c'è alcuna API web per la torcia, quindi il bottone resta semplicemente nascosto lì; resta il modello attuale in-app (nessun passaggio alla fotocamera di sistema).
+
+### Aggiunto — reazioni alle foto visibili e notificate
+- Le reazioni (`reactions.{uid}`) venivano salvate ma non si vedevano mai, nemmeno a chi le mandava: ora compaiono come badge sulla foto (tutte le reazioni presenti) e il bottone della propria scelta resta evidenziato. Aggiunto anche il push "ha reagito alla tua foto": `reactToPhoto` resetta `reactionNotifiedToPartner` quando a reagire è il partner (non il proprietario sulla sua stessa foto), e `notify-scheduler.mjs` lo processa con lo stesso pattern a transazione già usato per foto/note.
+
 ### Aggiunto — notifiche push linkate alla pagina giusta
 - Tap su una notifica portava sempre alla home, ignorando `data.type`/`data.noteId` già presenti nel payload. `sw.js` ora passa `data: payload.data` a `showNotification` e un listener `notificationclick` apre (o porta in foreground, via `postMessage` se un tab è già aperto) la view giusta: "Bigliettini" per `note_received`, home per `photo_prompt`/`photo_published`. `app.js` espone `goToView` (estratta dal click sulla sidebar) e legge `?view=` dall'URL al bootstrap.
 

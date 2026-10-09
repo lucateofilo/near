@@ -4,7 +4,7 @@ import { findMyCouple, generatePairingCode, redeemPairingCode } from './pairing.
 import { state, setUser, setCouple, reset } from './state.js';
 import { showView, toast, formatDate } from './ui.js';
 import { uploadPhoto, listPhotos, getPhotosByDate, reactToPhoto, deletePhoto, getPendingSlot, photoImages } from './firestore-photos.js';
-import { startCamera, stopCamera, captureFrame } from './camera-capture.js';
+import { startCamera, stopCamera, captureFrame, getZoomCapability, setZoom, hasTorch, setTorch } from './camera-capture.js';
 import { romeDateKey, oneYearBeforeKey } from './date-utils.js';
 import { sendNote, listNotes, markNoteRead, deleteNote } from './firestore-notes.js';
 import { SETTINGS_DEFS, getSettings, setSetting } from './settings.js';
@@ -179,14 +179,34 @@ const captureOverlay = document.getElementById('captureOverlay');
 const captureVideo = document.getElementById('captureVideo');
 const capturePreviewBack = document.getElementById('capturePreviewBack');
 const captureStepLabel = document.getElementById('captureStepLabel');
+const captureFlashBtn = document.getElementById('captureFlashBtn');
+const captureZoomRange = document.getElementById('captureZoomRange');
 let captureStream = null;
 let backBlob = null;
+let torchOn = false;
 
 async function runCaptureStep(facingMode, label) {
   captureStepLabel.textContent = label;
   captureStream = await startCamera(facingMode);
   captureVideo.srcObject = captureStream;
   captureVideo.classList.toggle('mirrored', facingMode === 'user');
+
+  const zoom = getZoomCapability(captureStream);
+  captureZoomRange.classList.toggle('hidden', !zoom);
+  if (zoom) {
+    Object.assign(captureZoomRange, { min: zoom.min, max: zoom.max, step: zoom.step, value: 1 });
+    captureZoomRange.oninput = () => setZoom(captureStream, captureZoomRange.value);
+  }
+
+  torchOn = false;
+  captureFlashBtn.classList.toggle('hidden', !hasTorch(captureStream));
+  captureFlashBtn.classList.remove('active');
+  captureFlashBtn.onclick = () => {
+    torchOn = !torchOn;
+    setTorch(captureStream, torchOn);
+    captureFlashBtn.classList.toggle('active', torchOn);
+  };
+
   return new Promise((resolve) => {
     document.getElementById('captureShotBtn').onclick = async () => {
       const blob = await captureFrame(captureVideo, facingMode === 'user');
@@ -201,6 +221,8 @@ function closeCaptureOverlay() {
   captureStream = null;
   backBlob = null;
   capturePreviewBack.classList.add('hidden');
+  captureFlashBtn.classList.add('hidden');
+  captureZoomRange.classList.add('hidden');
   captureOverlay.classList.add('hidden');
 }
 
@@ -272,6 +294,7 @@ async function renderHome() {
       <div class="dual-photo">
         <img class="photo-main" src="${main}" alt="Foto" loading="lazy">
         ${thumb ? `<img class="photo-thumb" src="${thumb}" alt="Selfie" loading="lazy">` : ''}
+        ${Object.keys(p.reactions || {}).length ? `<div class="reactions-badge">${Object.values(p.reactions).join('')}</div>` : ''}
       </div>
       <div class="photo-meta">
         <span class="meta-info">
@@ -280,8 +303,8 @@ async function renderHome() {
         </span>
         ${p.uid === state.user.uid ? `<button class="delete-btn" data-delete-photo="${p.id}" title="Elimina foto">${TRASH_ICON}</button>` : ''}
       </div>
-      <div class="reactions-row" data-photo-id="${p.id}">
-        ${REACTION_EMOJIS.map((em) => `<button data-emoji="${em}">${em}</button>`).join('')}
+      <div class="reactions-row" data-photo-id="${p.id}" data-owner-uid="${p.uid}">
+        ${REACTION_EMOJIS.map((em) => `<button data-emoji="${em}" class="${p.reactions?.[state.user.uid] === em ? 'active' : ''}">${em}</button>`).join('')}
       </div>
     </div>
   `;
@@ -307,8 +330,9 @@ async function renderHome() {
   wrap.querySelectorAll('.reactions-row').forEach((row) => {
     row.querySelectorAll('button').forEach((btn) => {
       btn.addEventListener('click', async () => {
-        await reactToPhoto(state.coupleId, row.dataset.photoId, state.user.uid, btn.dataset.emoji);
+        await reactToPhoto(state.coupleId, row.dataset.photoId, state.user.uid, btn.dataset.emoji, row.dataset.ownerUid);
         toast('Reazione inviata!');
+        renderHome();
       });
     });
   });
