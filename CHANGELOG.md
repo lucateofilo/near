@@ -2,6 +2,14 @@
 
 Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## 2026-10-12
+
+### Aggiunto — mappa dei ricordi
+- Le coordinate GPS venivano già salvate su ogni foto (`requestLocation` in `firestore-photos.js`, se `memoryMapEnabled` è attivo) ma non c'era nessuna UI che le mostrasse. Aggiunta una mappa Leaflet + tile OpenStreetMap (via CDN, come Firebase: nessuna libreria da installare, nessuna API key, nessun costo) nella vista Ricordi, con un pin per ogni foto geolocalizzata e popup con la data dello scatto. La card resta nascosta se nessuna foto ha una posizione salvata.
+
+### Corretto — schermo nero durante l'upload della foto
+- Dopo il doppio scatto, il `<video>` della fotocamera resta nero una volta fermato lo stream (nessun poster, nessun ultimo frame garantito su tutti i browser): durante l'upload su Cloudinary l'overlay restava così, fermo e apparentemente bloccato, per tutta la durata della richiesta. Ora al posto del video si mostra a piena schermo il selfie appena scattato con uno spinner e la scritta "Pubblicazione in corso...", così il layout fotocamera resta "vivo" invece di sembrare freezato.
+
 ## 2026-10-09
 
 ### Aggiunto — zoom e flash nello scatto foto

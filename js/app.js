@@ -177,13 +177,32 @@ navigator.serviceWorker?.addEventListener('message', (event) => {
 // davvero due stream camera simultanei via web), con retake libero prima di pubblicare.
 const captureOverlay = document.getElementById('captureOverlay');
 const captureVideo = document.getElementById('captureVideo');
+const captureUploadPreview = document.getElementById('captureUploadPreview');
+const captureUploadSpinner = document.getElementById('captureUploadSpinner');
 const capturePreviewBack = document.getElementById('capturePreviewBack');
 const captureStepLabel = document.getElementById('captureStepLabel');
+const captureShotBtn = document.getElementById('captureShotBtn');
 const captureFlashBtn = document.getElementById('captureFlashBtn');
 const captureZoomRange = document.getElementById('captureZoomRange');
 let captureStream = null;
 let backBlob = null;
 let torchOn = false;
+
+// Il <video> resta nero una volta fermato lo stream (nessun poster, nessun
+// ultimo frame garantito su tutti i browser): durante l'upload si mostra
+// invece il selfie appena scattato a piena schermo, cosi' il layout fotocamera
+// resta "vivo" e non sembra bloccato mentre carica su Cloudinary.
+function showCaptureUploading(frontBlob) {
+  captureVideo.classList.add('hidden');
+  captureShotBtn.classList.add('hidden');
+  captureFlashBtn.classList.add('hidden');
+  captureZoomRange.classList.add('hidden');
+  captureUploadPreview.src = URL.createObjectURL(frontBlob);
+  captureUploadPreview.classList.toggle('mirrored', true);
+  captureUploadPreview.classList.remove('hidden');
+  captureUploadSpinner.classList.remove('hidden');
+  captureStepLabel.textContent = 'Pubblicazione in corso...';
+}
 
 async function runCaptureStep(facingMode, label) {
   captureStepLabel.textContent = label;
@@ -223,6 +242,10 @@ function closeCaptureOverlay() {
   capturePreviewBack.classList.add('hidden');
   captureFlashBtn.classList.add('hidden');
   captureZoomRange.classList.add('hidden');
+  captureVideo.classList.remove('hidden');
+  captureShotBtn.classList.remove('hidden');
+  captureUploadPreview.classList.add('hidden');
+  captureUploadSpinner.classList.add('hidden');
   captureOverlay.classList.add('hidden');
 }
 
@@ -237,6 +260,7 @@ document.getElementById('captureBtn').addEventListener('click', async () => {
 
     const frontBlob = await runCaptureStep('user', 'E ora un selfie');
 
+    showCaptureUploading(frontBlob);
     await uploadPhoto(state.coupleId, state.user.uid, { backFile: backBlob, frontFile: frontBlob }, {
       withLocation: currentSettings?.memoryMapEnabled ?? true,
     });
@@ -535,6 +559,37 @@ async function renderEvents() {
 // sbirciare", non da gestire, per questo hanno una pagina propria invece di
 // affollare la Home o restare sepolti dentro Impostazioni.
 
+// Mappa creata una sola volta e riusata (Leaflet non ama essere ri-istanziata
+// sullo stesso div): ad ogni render si svuota solo il layer dei marker.
+let ricordiMap = null;
+let ricordiMarkers = null;
+
+function renderRicordiMap(photos) {
+  const card = document.getElementById('ricordiMapCard');
+  const points = photos.filter((p) => p.location?.lat != null && p.location?.lng != null);
+  card.classList.toggle('hidden', points.length === 0);
+  if (!points.length) return;
+
+  if (!ricordiMap) {
+    ricordiMap = L.map('ricordiMap');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap',
+      maxZoom: 18,
+    }).addTo(ricordiMap);
+    ricordiMarkers = L.layerGroup().addTo(ricordiMap);
+  }
+
+  ricordiMarkers.clearLayers();
+  points.forEach((p) => {
+    L.marker([p.location.lat, p.location.lng])
+      .bindPopup(formatDate(p.takenAt?.toDate?.() ?? p.takenAt))
+      .addTo(ricordiMarkers);
+  });
+  ricordiMap.fitBounds(points.map((p) => [p.location.lat, p.location.lng]), { padding: [20, 20], maxZoom: 15 });
+  // il container ha avuto size 0 mentre la vista era hidden: senza questo i tile si caricano storti
+  ricordiMap.invalidateSize();
+}
+
 async function renderRicordi() {
   const unpaired = document.getElementById('ricordiUnpaired');
   const content = document.getElementById('ricordiContent');
@@ -571,6 +626,8 @@ async function renderRicordi() {
   memoryEl.innerHTML = memoryPhotos.length
     ? '<h3>Un anno fa</h3>' + memoryPhotos.map((p) => `<img class="memory-photo" src="${photoImages(p).main}" alt="Ricordo di un anno fa" loading="lazy">`).join('')
     : '<h3>Un anno fa</h3><p>Nessun ricordo per oggi. L\'anno prossimo ci sarà.</p>';
+
+  renderRicordiMap(photos);
 }
 
 // ---------- Modalità silenziosa ----------
