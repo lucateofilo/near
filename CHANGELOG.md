@@ -2,6 +2,11 @@
 
 Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## 2026-10-13
+
+### Corretto — possibile doppia notifica per foto/bigliettini
+- `processPendingItems` in `notify-scheduler.mjs` inviava il push e solo dopo marcava `notifiedToPartner: true`, al contrario di `processRandomSlots`/`processReactionNotifications` nello stesso file che marcano dentro una transazione prima di inviare. Se lo script si interrompe (timeout, blip di rete) tra l'invio e la scrittura, il prossimo run del cron rilegge `notifiedToPartner == false` e rimanda lo stesso push. Riallineato allo stesso pattern marca-poi-invia già usato altrove nel file.
+
 ## 2026-10-12
 
 ### Aggiunto — mappa dei ricordi

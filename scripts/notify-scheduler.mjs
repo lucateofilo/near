@@ -146,12 +146,22 @@ async function processRandomSlots(coupleId, members, settings, dateKey) {
 async function processPendingItems(coupleId, members, settings, names, collectionName, buildNotification) {
   const snap = await db.collection(`couples/${coupleId}/${collectionName}`).where('notifiedToPartner', '==', false).get();
   for (const doc of snap.docs) {
+    // marca-poi-invia, non invia-poi-marca: se lo script si interrompe tra le
+    // due operazioni, cosi' si perde al massimo un push invece di rimandarlo
+    // due volte al run successivo (stesso pattern di processRandomSlots/processReactionNotifications)
+    const sent = await db.runTransaction(async (tx) => {
+      const fresh = await tx.get(doc.ref);
+      if (fresh.data().notifiedToPartner !== false) return false;
+      tx.update(doc.ref, { notifiedToPartner: true });
+      return true;
+    });
+    if (!sent) continue;
+
     const item = doc.data();
     const partnerUid = members.find((uid) => uid !== item.uid);
     if (partnerUid && !isSilenced(settings[partnerUid])) {
       await sendPush(coupleId, [partnerUid], settings, buildNotification(doc.id, item, names[item.uid]));
     }
-    await doc.ref.update({ notifiedToPartner: true });
   }
 }
 
