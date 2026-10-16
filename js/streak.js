@@ -1,9 +1,12 @@
 import { romeDateKey } from './date-utils.js';
 
-// Giorni consecutivi (fino a oggi, Europa/Roma) con almeno una foto, puntuale o in ritardo non importa.
-// Il giorno odierno, se ancora senza foto, non interrompe lo streak (il giorno non è "saltato" finché non finisce).
-export function computeStreak(photos) {
-  const days = new Set(photos.map((p) => p.scheduleDate));
+// Giorni consecutivi (fino a oggi, Europa/Roma) in cui ENTRAMBI i membri hanno
+// pubblicato almeno una foto, puntuale o in ritardo non importa.
+// Il giorno odierno, se ancora incompleto, non interrompe lo streak (il giorno non è "saltato" finché non finisce).
+export function computeStreak(photos, members) {
+  const daysByUid = new Map(members.map((uid) => [uid, new Set()]));
+  for (const p of photos) daysByUid.get(p.uid)?.add(p.scheduleDate);
+  const bothPosted = (key) => members.every((uid) => daysByUid.get(uid)?.has(key));
   const todayKey = romeDateKey();
 
   let streak = 0;
@@ -12,7 +15,7 @@ export function computeStreak(photos) {
 
   for (;;) {
     const key = romeDateKey(cursor);
-    const has = days.has(key);
+    const has = bothPosted(key);
     if (has) {
       streak++;
     } else if (first && key === todayKey) {

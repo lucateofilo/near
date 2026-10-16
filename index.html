@@ -44,7 +44,10 @@
   </section>
 
   <section id="view-home" class="view hidden">
-    <h1>Foto</h1>
+    <div class="view-head">
+      <h1>Foto</h1>
+      <span id="homeStreak" class="streak-badge hidden"></span>
+    </div>
     <div id="partnerCard" class="partner-card hidden"></div>
     <button id="captureBtn" class="capture-btn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.2"/></svg>
@@ -114,7 +117,6 @@
     <h1>Ricordi</h1>
     <p id="ricordiUnpaired" class="hidden">Abbinati al tuo partner dalla pagina Account per sbloccare streak, countdown e ricordi.</p>
     <div id="ricordiContent" class="hidden">
-      <div id="ricordiStreak" class="stat-card"></div>
       <div id="ricordiEvent" class="stat-card"></div>
       <div id="ricordiMemory" class="stat-card"></div>
       <div id="ricordiMapCard" class="stat-card hidden">

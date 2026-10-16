@@ -4,6 +4,9 @@ Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato 
 
 ## 2026-10-16
 
+### Spostato — streak dalla pagina Ricordi alla Home
+- Il badge streak passa da `stat-card` nei Ricordi a un pill compatto accanto al titolo "Foto" in Home (stesso pattern `view-head` usato in Bigliettini/Calendario), senza occupare righe extra. Cambiata anche la condizione: uno streak conta solo i giorni in cui **entrambi** i membri hanno pubblicato almeno una foto, non più uno qualsiasi dei due (`computeStreak` in `streak.js` ora richiede i due uid).
+
 ### Corretto — doppia notifica reale: payload FCM con `notification` + `data`
 - Il fix del 2026-10-13 copriva solo il caso di retry del cron. La doppia notifica che restava succedeva su ogni singolo push: `sendPush` in `notify-scheduler.mjs` includeva sia `notification` sia `data` nel payload FCM. Con `notification` presente, il push service del browser mostra la notifica di sistema in automatico, e poi `onBackgroundMessage` in `sw.js` la mostrava *di nuovo* manualmente con `showNotification` — due notifiche per un solo push. Passato a payload data-only (titolo/body dentro `data`), aggiornati `sw.js` e `js/fcm-client.js` per leggerli da lì.
 

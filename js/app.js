@@ -280,10 +280,12 @@ async function renderHome() {
   const reciprocityNote = document.getElementById('reciprocityNote');
   const wrap = document.getElementById('photosList');
   const partnerCard = document.getElementById('partnerCard');
+  const streakEl = document.getElementById('homeStreak');
 
   if (!state.coupleId) {
     captureBtn.classList.add('hidden');
     partnerCard.classList.add('hidden');
+    streakEl.classList.add('hidden');
     wrap.innerHTML = '<p>Abbinati al tuo partner dalla pagina Account per iniziare a scattare foto insieme.</p>';
     return;
   }
@@ -310,6 +312,12 @@ async function renderHome() {
   const visible = photos.filter((p) => !hiddenToday.includes(p));
 
   reciprocityNote.classList.toggle('hidden', hiddenToday.length === 0);
+
+  streakEl.classList.toggle('hidden', currentSettings?.streakEnabled === false);
+  if (currentSettings?.streakEnabled !== false) {
+    const streak = computeStreak(photos, [state.user.uid, state.partnerUid]);
+    streakEl.textContent = `${streak} ${streak === 1 ? 'giorno' : 'giorni'}`;
+  }
 
   wrap.innerHTML = visible.map((p) => {
     const { main, thumb } = photoImages(p);
@@ -593,7 +601,6 @@ function renderRicordiMap(photos) {
 async function renderRicordi() {
   const unpaired = document.getElementById('ricordiUnpaired');
   const content = document.getElementById('ricordiContent');
-  const streakEl = document.getElementById('ricordiStreak');
   const eventEl = document.getElementById('ricordiEvent');
   const memoryEl = document.getElementById('ricordiMemory');
 
@@ -606,12 +613,6 @@ async function renderRicordi() {
   content.classList.remove('hidden');
 
   const [photos, events] = await Promise.all([listPhotos(state.coupleId), listEvents(state.coupleId)]);
-
-  streakEl.classList.toggle('hidden', currentSettings?.streakEnabled === false);
-  if (currentSettings?.streakEnabled !== false) {
-    const streak = computeStreak(photos);
-    streakEl.innerHTML = `<h3>Streak</h3><p>${streak} ${streak === 1 ? 'giorno' : 'giorni'} consecutivi</p>`;
-  }
 
   eventEl.classList.toggle('hidden', currentSettings?.calendarEnabled === false);
   if (currentSettings?.calendarEnabled !== false) {

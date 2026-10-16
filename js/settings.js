@@ -4,7 +4,7 @@ import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.13.0/
 export const SETTINGS_DEFS = [
   { key: 'calendarEnabled', title: 'Calendario anniversari', desc: 'Countdown per eventi e anniversari di coppia.' },
   { key: 'memoryMapEnabled', title: 'Mappa dei ricordi', desc: 'Geolocalizza le foto scattate (se neghi il permesso, la foto viene salvata comunque, senza posizione).' },
-  { key: 'streakEnabled', title: 'Streak giornaliero', desc: 'Conta i giorni consecutivi in cui avete scattato almeno una foto, puntuale o in ritardo.' },
+  { key: 'streakEnabled', title: 'Streak giornaliero', desc: 'Conta i giorni consecutivi in cui entrambi avete scattato almeno una foto, puntuale o in ritardo.' },
   { key: 'silentModeShortcutVisible', title: 'Scorciatoia modalità silenziosa', desc: 'Mostra in home il pulsante rapido per attivare la modalità silenziosa.' },
 ];
 
