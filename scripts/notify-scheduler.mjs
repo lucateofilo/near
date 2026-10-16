@@ -91,7 +91,10 @@ async function sendPush(coupleId, members, settings, { title, body, data }) {
     console.log(`[push] "${data.type}": nessun token (${members.length} membri, ${recipients.length} non silenziati)`);
     return;
   }
-  const res = await messaging.sendEachForMulticast({ tokens, notification: { title, body }, data });
+  // data-only: niente campo "notification", altrimenti il push service del
+  // browser mostra la notifica in automatico E onBackgroundMessage la mostra
+  // di nuovo manualmente in sw.js, raddoppiandola.
+  const res = await messaging.sendEachForMulticast({ tokens, data: { ...data, title, body } });
   console.log(`[push] "${data.type}": ${res.successCount}/${tokens.length} inviati`);
 
   const staleByUid = new Map();

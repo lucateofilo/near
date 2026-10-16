@@ -15,9 +15,9 @@ firebase.initializeApp({
 });
 
 firebase.messaging().onBackgroundMessage((payload) => {
-  const title = payload.notification?.title || 'Nearby';
+  const title = payload.data?.title || 'Nearby';
   const options = {
-    body: payload.notification?.body || '',
+    body: payload.data?.body || '',
     icon: 'icons/icon-192.png',
     badge: 'icons/icon-notification.png',
     data: payload.data,

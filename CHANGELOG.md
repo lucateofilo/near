@@ -2,6 +2,11 @@
 
 Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## 2026-10-16
+
+### Corretto — doppia notifica reale: payload FCM con `notification` + `data`
+- Il fix del 2026-10-13 copriva solo il caso di retry del cron. La doppia notifica che restava succedeva su ogni singolo push: `sendPush` in `notify-scheduler.mjs` includeva sia `notification` sia `data` nel payload FCM. Con `notification` presente, il push service del browser mostra la notifica di sistema in automatico, e poi `onBackgroundMessage` in `sw.js` la mostrava *di nuovo* manualmente con `showNotification` — due notifiche per un solo push. Passato a payload data-only (titolo/body dentro `data`), aggiornati `sw.js` e `js/fcm-client.js` per leggerli da lì.
+
 ## 2026-10-13
 
 ### Corretto — possibile doppia notifica per foto/bigliettini

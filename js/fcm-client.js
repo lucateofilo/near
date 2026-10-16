@@ -20,7 +20,7 @@ export async function enableNotifications(coupleId, uid) {
 
   // in foreground FCM non mostra la notifica di sistema da sola: con l'app aperta
   // il payload arrivava qui e finiva solo in console, invisibile all'utente
-  onMessage(messaging, (payload) => toast(payload.notification?.body || 'Nuova notifica'));
+  onMessage(messaging, (payload) => toast(payload.data?.body || 'Nuova notifica'));
 
   return token;
 }
