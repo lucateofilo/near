@@ -3,7 +3,7 @@ import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
 import { romeDateKey, romeWallTimeToDate } from '../js/date-utils.js';
 
-const DAILY_NOTIFICATIONS = 4;   // costante interna, mai esposta/configurabile lato utente
+const DAILY_NOTIFICATIONS = 2;   // costante interna, mai esposta/configurabile lato utente
 const MIN_GAP_HOURS = 3;
 const WINDOW_START_HOUR = 9;     // 09:00
 const WINDOW_END_HOUR = 26;      // 02:00 del giorno dopo (24 + 2)

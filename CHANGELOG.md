@@ -2,6 +2,14 @@
 
 Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## 2026-11-17
+
+### Cambiato — notifiche random giornaliere da 4 a 2
+- `DAILY_NOTIFICATIONS` in `notify-scheduler.mjs` abbassato da 4 a 2: con 4/giorno (8 foto/giorno in coppia) la query `listPhotos` (limitata a `limit(100)`, serve alle liste foto normali) copriva solo ~12-13 giorni di storico, e `computeStreak` in `streak.js` — che riceve le stesse 100 foto — troncava silenziosamente lo streak oltre quella soglia invece di contare i giorni reali. A 2/giorno (4 foto/giorno) la stessa finestra di 100 foto copre ~25 giorni prima di ripresentare lo stesso limite.
+
+### Corretto — cron esterno su cron-job.org fermo da 12 giorni
+- Il token GitHub fine-grained usato dal cronjob (creato il 2026-10-06) aveva scadenza impostata a 30 giorni invece di "No expiration": scaduto il 2026-11-05, ha fatto fallire ogni chiamata a `workflow_dispatch` da quel momento, e cron-job.org ha disattivato automaticamente il job dopo i fallimenti ripetuti. Per 12 giorni le notifiche sono quindi dipese solo dal trigger nativo `schedule:`, con i ritardi di ore già noti (vedi `2026-10-06`). Rigenerato il token con scadenza "No expiration", aggiornato su cron-job.org e riattivato il job: `workflow_dispatch` torna a girare ogni ~5 minuti.
+
 ## 2026-10-16
 
 ### Spostato — streak dalla pagina Ricordi alla Home
