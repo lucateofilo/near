@@ -191,6 +191,7 @@ button:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(156,175,136,0.4
     box-shadow: 0 6px 18px rgba(60,58,54,0.1); transform: translateY(-1px);
   }
 }
+.photo-highlight { box-shadow: 0 0 0 3px var(--sage); }
 .dual-photo { position: relative; margin-bottom: 8px; }
 .photo-main { width: 100%; border-radius: 10px; display: block; }
 .photo-thumb {

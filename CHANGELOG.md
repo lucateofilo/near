@@ -2,6 +2,17 @@
 
 Tutte le modifiche rilevanti al progetto sono documentate qui. Formato ispirato a [Keep a Changelog](https://keepachangelog.com/it/1.0.0/).
 
+## 2026-11-17 (2)
+
+### Corretto — pausa viaggio con 1-2h di scarto rispetto alla mezzanotte di Roma
+- `isTravelPaused` in `notify-scheduler.mjs` calcolava l'inizio del viaggio con `new Date(startDateT00:00:00Z)`, trattando la data come mezzanotte UTC invece che mezzanotte civile di Roma (unico punto del file a non usare `romeWallTimeToDate`, già pensata apposta per questo). Ora riusa quella funzione: la pausa notifiche parte/finisce esattamente alla mezzanotte di Roma del giorno impostato.
+
+### Corretto — regola Firestore su `photos` troppo permissiva
+- `allow update` sulle foto permetteva a chiunque fosse membro della coppia di modificare qualsiasi campo del documento (backUrl, status, uid...), non solo le reazioni. Ristretto con `diff().affectedKeys().hasOnly([...])` allo stesso pattern già usato per `notes`: ora un update può toccare solo `reactions`/`reactionNotifiedToPartner`. Pubblicato in produzione.
+
+### Aggiunto — deep link dalla notifica di reazione alla foto specifica
+- Toccare una notifica "ha reagito alla tua foto" portava alla Home ma in cima, lasciando cercare la foto nella lista. `sw.js` ora passa `photoId` insieme alla view (via `postMessage` o querystring `?photoId=`), `goToView` lo inoltra a `highlightPhoto()` in `app.js` che scrolla alla card giusta e la evidenzia per 2 secondi (`.photo-highlight` in `style.css`). Bump cache SW (v12) per il nuovo stile.
+
 ## 2026-11-17
 
 ### Cambiato — notifiche random giornaliere da 4 a 2

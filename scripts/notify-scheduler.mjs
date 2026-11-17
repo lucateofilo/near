@@ -76,7 +76,7 @@ async function isTravelPaused(coupleId) {
   return trips.docs.some((doc) => {
     const t = doc.data();
     if (!t.randomNotificationsPaused) return false;
-    const start = new Date(`${t.startDate}T00:00:00Z`).getTime();
+    const start = romeWallTimeToDate(t.startDate, 0, 0).getTime();
     const end = start + t.days * 86400000;
     return now >= start && now < end;
   });

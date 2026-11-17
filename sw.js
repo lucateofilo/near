@@ -30,21 +30,24 @@ firebase.messaging().onBackgroundMessage((payload) => {
 // con ?view= nell'URL, letto da app.js al bootstrap.
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const view = event.notification.data?.type === 'note_received' ? 'notes' : 'home';
+  const data = event.notification.data || {};
+  const view = data.type === 'note_received' ? 'notes' : 'home';
+  const photoId = data.type === 'reaction_received' ? data.photoId : null;
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
       const client = list.find((c) => c.url.startsWith(self.registration.scope));
       if (client) {
-        client.postMessage({ type: 'navigate', view });
+        client.postMessage({ type: 'navigate', view, photoId });
         return client.focus();
       }
-      return self.clients.openWindow(`${self.registration.scope}?view=${view}`);
+      const url = photoId ? `${self.registration.scope}?view=${view}&photoId=${photoId}` : `${self.registration.scope}?view=${view}`;
+      return self.clients.openWindow(url);
     })
   );
 });
 
-const CACHE_NAME = 'near-shell-v11';
+const CACHE_NAME = 'near-shell-v12';
 const SHELL_FILES = [
   './',
   './index.html',

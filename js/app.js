@@ -149,7 +149,7 @@ document.getElementById('menuBtn').addEventListener('click', openNav);
 document.getElementById('closeNavBtn').addEventListener('click', closeNav);
 document.getElementById('navBackdrop').addEventListener('click', closeNav);
 
-async function goToView(view) {
+async function goToView(view, highlightPhotoId) {
   document.querySelectorAll('.nav-item').forEach((b) => b.classList.toggle('active', b.dataset.view === view));
   closeNav();
 
@@ -159,7 +159,19 @@ async function goToView(view) {
   }
 
   showView(view);
-  VIEW_RENDERERS[view]();
+  await VIEW_RENDERERS[view]();
+
+  if (view === 'home' && highlightPhotoId) highlightPhoto(highlightPhotoId);
+}
+
+// Notifica di reazione aperta dall'utente: porta subito all'occhio la foto
+// specifica invece di lasciarlo cercarla nella lista.
+function highlightPhoto(photoId) {
+  const card = document.querySelector(`.reactions-row[data-photo-id="${photoId}"]`)?.closest('.photo-card');
+  if (!card) return;
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  card.classList.add('photo-highlight');
+  setTimeout(() => card.classList.remove('photo-highlight'), 2000);
 }
 
 document.querySelectorAll('.nav-item').forEach((btn) => {
@@ -168,7 +180,7 @@ document.querySelectorAll('.nav-item').forEach((btn) => {
 
 // Tap su una notifica con l'app già aperta: il SW manda qui la view di destinazione.
 navigator.serviceWorker?.addEventListener('message', (event) => {
-  if (event.data?.type === 'navigate') goToView(event.data.view);
+  if (event.data?.type === 'navigate') goToView(event.data.view, event.data.photoId);
 });
 
 // ---------- Home / Foto ----------
@@ -801,9 +813,11 @@ async function enterApp() {
 
   // Apertura da notifica (sw.js ha aggiunto ?view=... all'URL): atterra lì
   // invece che sulla home di default.
-  const requestedView = new URLSearchParams(location.search).get('view');
+  const params = new URLSearchParams(location.search);
+  const requestedView = params.get('view');
+  const requestedPhotoId = params.get('photoId');
   history.replaceState(null, '', location.pathname);
-  await goToView(VIEW_RENDERERS[requestedView] ? requestedView : 'home');
+  await goToView(VIEW_RENDERERS[requestedView] ? requestedView : 'home', requestedPhotoId);
 }
 
 let firstAuthCheckDone = false;

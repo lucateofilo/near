@@ -48,7 +48,9 @@ service cloud.firestore {
       match /photos/{photoId} {
         allow read: if isMember(coupleId);
         allow create: if isMember(coupleId) && request.resource.data.uid == request.auth.uid;
-        allow update: if isMember(coupleId); // reazioni dell'altro partner
+        // solo reazioni (e il flag che le accompagna), non backUrl/status/uid/etc.
+        allow update: if isMember(coupleId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions', 'reactionNotifiedToPartner']);
         allow delete: if isMember(coupleId) && resource.data.uid == request.auth.uid;
       }
 
